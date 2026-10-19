@@ -165,7 +165,7 @@ trackingForm.addEventListener("submit", (event) => {
   trackingResult.classList.remove("tracking-success");
   const submitButton = trackingForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;
-  fetch("/api/reports/track", {
+  fetch(`${window.LAPORKKA_API_BASE}/reports/track`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: trackingTokenInput.value.trim().toUpperCase() }),
@@ -225,7 +225,7 @@ form.addEventListener("submit", (event) => {
   submitButton.disabled = true;
   submitButton.textContent = "Mengirim laporan...";
 
-  fetch("/api/reports", { method: "POST", body: payload })
+  fetch(`${window.LAPORKKA_API_BASE}/reports`, { method: "POST", body: payload })
     .then(async (response) => {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Laporan gagal dikirim.");

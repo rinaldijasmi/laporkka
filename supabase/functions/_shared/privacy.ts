@@ -23,14 +23,14 @@ const PRIVATE_TEXT_PATTERNS = [
   /\b\d{6,}\b/gu,
 ];
 
-function escapeRegExp(value) {
+function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function redactReportText(description, privateValues = []) {
+export function redactReportText(description: string, privateValues: unknown[] = []) {
   let redacted = description;
   const names = privateValues
-    .filter((value) => typeof value === "string" && value.trim().length >= 2)
+    .filter((value): value is string => typeof value === "string" && value.trim().length >= 2)
     .map((value) => value.trim())
     .sort((left, right) => right.length - left.length);
 

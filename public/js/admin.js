@@ -18,13 +18,55 @@ let totalPages = 1;
 let toastTimeout;
 let searchTimeout;
 
+const SESSION_KEY = "laporkka.session";
+
+function readSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function saveSession(session) {
+  if (session) sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  else sessionStorage.removeItem(SESSION_KEY);
+}
+
+async function refreshSession() {
+  const session = readSession();
+  if (!session?.refreshToken) return false;
+  try {
+    const response = await fetch(`${window.LAPORKKA_API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: session.refreshToken }),
+    });
+    if (!response.ok) {
+      saveSession(null);
+      return false;
+    }
+    const { accessToken, refreshToken } = await response.json();
+    saveSession({ accessToken, refreshToken });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function apiFetch(url, options = {}) {
-  const response = await fetch(url, {
-    credentials: "same-origin",
+  const send = () => fetch(`${window.LAPORKKA_API_BASE}${url}`, {
     ...options,
-    headers: { ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }), ...options.headers },
+    headers: {
+      ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...(readSession() ? { Authorization: `Bearer ${readSession().accessToken}` } : {}),
+      ...options.headers,
+    },
   });
-  if (response.status === 401 && url !== "/api/auth/me") {
+  const isAuthEntry = url === "/auth/login" || url === "/auth/me";
+  let response = await send();
+  if (response.status === 401 && !isAuthEntry && await refreshSession()) response = await send();
+  if (response.status === 401 && !isAuthEntry) {
     showSessionExpired();
     throw new Error("Sesi Anda telah berakhir. Silakan masuk kembali.");
   }
@@ -129,7 +171,7 @@ async function loadReports() {
   if (searchInput.value.trim()) params.set("search", searchInput.value.trim());
   if (statusFilter.value !== "all") params.set("status", statusFilter.value);
   if (categoryFilter.value !== "all") params.set("category", categoryFilter.value);
-  const result = await apiFetch(`/api/admin/reports?${params.toString()}`);
+  const result = await apiFetch(`/admin/reports?${params.toString()}`);
   reports = result.reports;
   currentPage = result.page;
   totalPages = result.totalPages;
@@ -257,7 +299,7 @@ function renderEvidence(evidence) {
     link.textContent = `${file.file_name} · ${Math.ceil(file.file_size / 1024)} KB`;
     link.addEventListener("click", async () => {
       try {
-        const result = await apiFetch(`/api/admin/evidence/${file.id}`);
+        const result = await apiFetch(`/admin/evidence/${file.id}`);
         window.open(result.url, "_blank", "noopener,noreferrer");
       } catch (error) {
         showToast(error.message, true);
@@ -301,7 +343,7 @@ async function loadUsers() {
     assignmentForm.hidden = true;
     return;
   }
-  const { users } = await apiFetch("/api/admin/users");
+  const { users } = await apiFetch("/admin/users");
   assigneeSelect.replaceChildren(new Option("Pilih akun petugas", ""));
   users.filter((user) => user.role !== "Admin").forEach((user) => {
     assigneeSelect.add(new Option(`${user.username} — ${user.role}`, user.username));
@@ -311,7 +353,7 @@ async function loadUsers() {
 
 async function openReport(id) {
   try {
-    const { report } = await apiFetch(`/api/admin/reports/${encodeURIComponent(id)}`);
+    const { report } = await apiFetch(`/admin/reports/${encodeURIComponent(id)}`);
     activeReportId = report.id;
     document.querySelector("#detail-token").textContent = report.token;
     document.querySelector("#detail-status").value = report.status;
@@ -358,7 +400,7 @@ async function openReport(id) {
 
 async function bootstrap() {
   try {
-    currentUser = await apiFetch("/api/auth/me");
+    currentUser = await apiFetch("/auth/me");
     document.querySelector(".admin-identity strong").textContent = currentUser.username;
     document.querySelector(".admin-identity small").textContent = currentUser.role;
     document.querySelector("#admin-logout").hidden = false;
@@ -382,13 +424,14 @@ loginForm.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   try {
     const formData = new FormData(loginForm);
-    currentUser = await apiFetch("/api/auth/login", {
+    currentUser = await apiFetch("/auth/login", {
       method: "POST",
       body: JSON.stringify({
         username: formData.get("username"),
         password: formData.get("password"),
       }),
     });
+    saveSession({ accessToken: currentUser.accessToken, refreshToken: currentUser.refreshToken });
     loginForm.reset();
     await bootstrap();
   } catch (error) {
@@ -435,10 +478,12 @@ document.querySelector("[data-close-detail]").addEventListener("click", () => re
 document.querySelector("#reload-admin").addEventListener("click", () => window.location.reload());
 document.querySelector("#admin-logout").addEventListener("click", async () => {
   try {
-    await apiFetch("/api/auth/logout", { method: "POST" });
+    await apiFetch("/auth/logout", { method: "POST" });
+  } catch {
+    // Sesi lokal tetap dihapus meskipun pencabutan di server gagal.
+  } finally {
+    saveSession(null);
     window.location.reload();
-  } catch (error) {
-    showToast(error.message, true);
   }
 });
 
@@ -447,7 +492,7 @@ assignmentForm.addEventListener("submit", async (event) => {
   const button = assignmentForm.querySelector('button[type="submit"]');
   button.disabled = true;
   try {
-    const result = await apiFetch(`/api/admin/reports/${encodeURIComponent(activeReportId)}/assignment`, {
+    const result = await apiFetch(`/admin/reports/${encodeURIComponent(activeReportId)}/assignment`, {
       method: "PATCH",
       body: JSON.stringify({ username: assigneeSelect.value }),
     });
@@ -466,7 +511,7 @@ followUpForm.addEventListener("submit", async (event) => {
   const button = followUpForm.querySelector('button[type="submit"]');
   button.disabled = true;
   try {
-    const result = await apiFetch(`/api/admin/reports/${encodeURIComponent(activeReportId)}`, {
+    const result = await apiFetch(`/admin/reports/${encodeURIComponent(activeReportId)}`, {
       method: "PATCH",
       body: JSON.stringify({
         status: document.querySelector("#detail-status").value,

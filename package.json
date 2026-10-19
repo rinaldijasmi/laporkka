@@ -4,17 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
     "create-user": "node scripts/create-user.js",
+    "build:articles": "node scripts/build-articles.js",
+    "serve:public": "node scripts/serve-public.js",
     "test": "node --test"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
-  "dependencies": {
+  "devDependencies": {
     "@supabase/supabase-js": "^2.118.0",
-    "busboy": "^1.6.0",
     "dotenv": "^18.0.8",
     "pdf-parse": "^2.4.5"
   }

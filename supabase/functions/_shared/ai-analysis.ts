@@ -1,6 +1,4 @@
-import { readFile } from "node:fs/promises";
-import { PDFParse } from "pdf-parse";
-import { redactReportText } from "./privacy.js";
+import { redactReportText } from "./privacy.ts";
 
 const STOP_WORDS = new Set([
   "adalah", "agar", "akan", "atau", "bahwa", "dalam", "dan", "dari", "dengan",
@@ -9,47 +7,9 @@ const STOP_WORDS = new Set([
   "saya", "kami", "mereka", "telah", "dapat", "saat", "satu", "dua",
 ]);
 
-export async function readEthicsArticles(pdfPath) {
-  const parser = new PDFParse({ data: await readFile(pdfPath) });
-  try {
-    const { text } = await parser.getText();
-    const matches = Array.from(text.matchAll(/(?:^|\n)[ \t]*Pasal\s+(\d+)\b([^\n]*)/gu));
-    const headings = matches.filter((match) => {
-      const continuation = match[2].trim();
-      return !/^(?:ayat|angka|huruf|sebagaimana|di atas)\b/iu.test(continuation);
-    });
-    const articles = new Map();
+export type Article = { article: number; title: string; text: string };
 
-    for (let index = 0; index < headings.length; index += 1) {
-      const match = headings[index];
-      const articleNumber = Number(match[1]);
-      if (articles.has(articleNumber)) continue;
-      const start = match.index + match[0].indexOf("Pasal");
-      const end = headings[index + 1]?.index ?? text.length;
-      const body = text.slice(start, end)
-        .replace(/--\s+\d+\s+of\s+\d+\s+--/gu, "")
-        .replace(/Lampiran:\s*PERATURAN UNIVERSITAS TELKOM[\s\S]*?(?=Pasal\s+\d+|$)/gu, "")
-        .replace(/\s+/gu, " ")
-        .trim();
-      const continuation = match[2].trim();
-      const title = continuation && !/^\d+\./u.test(continuation)
-        ? continuation
-        : `Pasal ${articleNumber}`;
-      articles.set(articleNumber, {
-        article: articleNumber,
-        title: title.slice(0, 150),
-        text: body.slice(0, 5000),
-      });
-    }
-
-    if (articles.size === 0) throw new Error("Tidak ditemukan teks pasal pada PDF kode etik.");
-    return [...articles.values()];
-  } finally {
-    await parser.destroy();
-  }
-}
-
-function tokenize(text) {
+function tokenize(text: string) {
   return new Set(
     text.toLocaleLowerCase("id")
       .normalize("NFKD")
@@ -59,7 +19,7 @@ function tokenize(text) {
   );
 }
 
-export function findRelevantArticles(articles, query, limit = 5) {
+export function findRelevantArticles(articles: Article[], query: string, limit = 5): Article[] {
   const queryTokens = tokenize(query);
   const tokenSets = articles.map((article) => tokenize(`${article.title} ${article.text}`));
   return articles
@@ -75,10 +35,10 @@ export function findRelevantArticles(articles, query, limit = 5) {
     .filter((article) => article.score > 0)
     .sort((left, right) => right.score - left.score)
     .slice(0, limit)
-    .map(({ score, ...article }) => article);
+    .map(({ score: _score, ...article }) => article);
 }
 
-function parseAnalysis(content, relevantArticles) {
+function parseAnalysis(content: string, relevantArticles: Article[]) {
   let analysis;
   try {
     analysis = JSON.parse(content);
@@ -97,9 +57,9 @@ function parseAnalysis(content, relevantArticles) {
 
   const availableArticles = new Map(relevantArticles.map((article) => [article.article, article]));
   const articleMatches = analysis.article_matches
-    .filter((match) => Number.isInteger(match.article) && availableArticles.has(match.article))
-    .map((match) => {
-      const source = availableArticles.get(match.article);
+    .filter((match: any) => Number.isInteger(match.article) && availableArticles.has(match.article))
+    .map((match: any) => {
+      const source = availableArticles.get(match.article)!;
       return {
         article: match.article,
         title: source.title,
@@ -113,12 +73,18 @@ function parseAnalysis(content, relevantArticles) {
     summary: analysis.summary.slice(0, 2000),
     article_matches: articleMatches,
     recommendation: analysis.recommendation.slice(0, 2000),
-    next_steps: analysis.next_steps.filter((step) => typeof step === "string").slice(0, 8).map((step) => step.slice(0, 500)),
+    next_steps: analysis.next_steps
+      .filter((step: unknown) => typeof step === "string")
+      .slice(0, 8)
+      .map((step: string) => step.slice(0, 500)),
     caveat: "Analisis AI adalah bahan pratinjau, bukan penetapan pelanggaran atau keputusan disiplin. Admin wajib memeriksa dokumen dan konteks laporan.",
   };
 }
 
-export async function analyzeReport(report, { apiKey, model, articles }) {
+export async function analyzeReport(
+  report: Record<string, any>,
+  { apiKey, model, articles }: { apiKey?: string; model: string; articles: Article[] },
+) {
   if (!apiKey) throw new Error("OPENAI_API_KEY belum dikonfigurasi.");
   if (!articles?.length) throw new Error("Teks PDF Kode Etik Mahasiswa belum tersedia.");
 

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { findRelevantArticles } from "../src/lib/ai-analysis.js";
-import { redactReportText, USER_ROLES } from "../src/lib/privacy.js";
+import { findRelevantArticles } from "../supabase/functions/_shared/ai-analysis.ts";
+import { redactReportText, USER_ROLES } from "../supabase/functions/_shared/privacy.ts";
 
 test("redacts reporter and reported identities, NIM, email and phone from narrative", () => {
   const text = "Rina Putri (NIM 12345678) menghubungi saya di rina@example.com atau 081234567890.";
