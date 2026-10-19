@@ -44,7 +44,7 @@ test/                      tes unit
    npm run create-user
    ```
 
-   Pendaftaran akun publik tidak tersedia.
+   Ini hanya untuk Admin pertama. Akun petugas lain dibuat Admin lewat tombol **Kelola Akun** di dashboard; pendaftaran publik tidak tersedia.
 
 Jika PDF Kode Etik diganti, jalankan `npm run build:articles` lalu deploy ulang fungsi.
 
@@ -77,5 +77,6 @@ AI menerima kategori, tanggal/waktu kejadian, dan kronologi setelah nama pelapor
 - `POST /reports` — menyimpan laporan dan bukti privat; mengembalikan token pelacakan sekali saja.
 - `POST /reports/track` — status dan catatan tindak lanjut berdasarkan token.
 - `POST /auth/login`, `/auth/refresh`, `/auth/logout`, `GET /auth/me` — login username/password; sesi memakai token Bearer yang disimpan di `sessionStorage` tab.
-- `GET /admin/reports`, `GET /admin/reports/:id`, `GET /admin/users`, `GET /admin/evidence/:id`
+- `GET /admin/reports`, `GET /admin/reports/:id`, `GET /admin/evidence/:id`
+- `GET /admin/users`, `POST /admin/users` (Admin: membuat akun petugas selain Admin)
 - `PATCH /admin/reports/:id/assignment` (Admin), `PATCH /admin/reports/:id` (status dan catatan)

@@ -49,7 +49,10 @@
               <h1>Dashboard Laporan</h1>
               <p>Pantau dan tindak lanjuti laporan yang masuk.</p>
             </div>
-            <button class="admin-refresh" id="refresh-dashboard" type="button"><span aria-hidden="true">↻</span> Perbarui</button>
+            <div class="heading-actions">
+              <button class="admin-refresh" id="manage-accounts" type="button" hidden><span aria-hidden="true">+</span> Kelola Akun</button>
+              <button class="admin-refresh" id="refresh-dashboard" type="button"><span aria-hidden="true">↻</span> Perbarui</button>
+            </div>
           </div>
         </div>
       </div>
@@ -205,6 +208,44 @@
         <div class="activity-log" id="activity-log"></div>
         <p class="admin-detail-demo-note">Catatan tindak lanjut dapat dilihat pelapor melalui token laporan.</p>
       </form>
+    </dialog>
+
+    <dialog class="feature-dialog account-dialog" id="account-dialog" aria-labelledby="account-title">
+      <div class="dialog-header">
+        <div>
+          <span class="form-kicker">PENGELOLAAN AKUN</span>
+          <h2 id="account-title">Akun Petugas</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close-accounts aria-label="Tutup">×</button>
+      </div>
+      <form id="account-form">
+        <label class="field"><span>Username</span><input name="username" autocomplete="off" required minlength="3" maxlength="32" pattern="[a-zA-Z0-9._\-]+" /></label>
+        <label class="field">
+          <span>Peran</span>
+          <select name="role" required>
+            <option value="">Pilih peran</option>
+            <option value="PKKM">PKKM</option>
+            <option value="PKM">PKM</option>
+            <option value="ASUS">ASUS</option>
+            <option value="Akademik">Akademik</option>
+            <option value="Kemahasiswaan FTE">Kemahasiswaan FTE</option>
+            <option value="Kemahasiswaan FIF">Kemahasiswaan FIF</option>
+            <option value="Kemahasiswaan FRI">Kemahasiswaan FRI</option>
+            <option value="Kemahasiswa FKS">Kemahasiswa FKS</option>
+            <option value="Kemahasiswaan FKB">Kemahasiswaan FKB</option>
+            <option value="Kemahasiswaan FIK">Kemahasiswaan FIK</option>
+            <option value="Kemahasiswaan FIT">Kemahasiswaan FIT</option>
+            <option value="Kemahasiswaan FK">Kemahasiswaan FK</option>
+            <option value="Kemahasiswaan TUJ">Kemahasiswaan TUJ</option>
+            <option value="Kemahasiswaan TUS">Kemahasiswaan TUS</option>
+            <option value="Kemahasiswaan TUP">Kemahasiswaan TUP</option>
+          </select>
+        </label>
+        <label class="field"><span>Password awal (minimal 12 karakter)</span><input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72" /></label>
+        <p class="login-error" id="account-error" role="alert" hidden></p>
+        <div class="dialog-actions"><button class="button button-primary" type="submit">Buat akun <span class="button-arrow" aria-hidden="true">→</span></button></div>
+      </form>
+      <div class="account-list" id="account-list" aria-label="Daftar akun petugas"></div>
     </dialog>
 
     <dialog class="feature-dialog auth-dialog" id="session-expired-dialog" aria-labelledby="session-expired-title">

@@ -19,6 +19,7 @@
 .heading-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
 .heading-row h1 { margin: 3px 0 2px; color: #202a3a; font: 800 27px/1.3 "Manrope",sans-serif; letter-spacing: -.045em; }
 .heading-row p { margin: 0; color: #788392; font-size: 11px; }
+.heading-actions { display: flex; gap: 8px; }
 .admin-refresh { min-height: 37px; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; color: #576373; border: 1px solid #dce2e7; border-radius: 8px; background: #fff; font-size: 10px; font-weight: 700; cursor: pointer; }
 .admin-refresh:hover { color: var(--red); border-color: #d7a4a2; }
 .admin-refresh span { font-size: 17px; }
@@ -202,3 +203,12 @@
   .assignment-form { align-items: stretch; flex-direction: column; }
   .assignment-form .button { width: 100%; }
 }
+
+.account-dialog { width: min(470px,calc(100% - 28px)); }
+.account-dialog .field { margin-top: 13px; }
+.account-dialog .dialog-actions { margin-top: 16px; }
+.account-list { margin-top: 20px; padding-top: 14px; border-top: 1px solid #e7ebef; max-height: 220px; overflow-y: auto; }
+.account-list h3 { margin: 0 0 8px; color: #202a3a; font-size: 11px; }
+.account-list ul { margin: 0; padding: 0; list-style: none; }
+.account-list li { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid #f0f2f4; font-size: 11px; }
+.account-list li span { color: #788392; }

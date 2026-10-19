@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import articlesData from "../_shared/articles.json" with { type: "json" };
 import { analyzeReport } from "../_shared/ai-analysis.ts";
+import { USER_ROLES } from "../_shared/privacy.ts";
 import type { Article } from "../_shared/ai-analysis.ts";
 
 const ethicsArticles = articlesData as Article[];
@@ -585,6 +586,46 @@ async function route(request: Request, url: URL, path: string) {
       order: "role.asc,username.asc",
     }));
     return json(request, 200, { users: data });
+  }
+
+  if (method === "POST" && path === "/admin/users") {
+    if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat membuat akun petugas.");
+    const body = await readJson(request);
+    const username = typeof body.username === "string" ? body.username.trim() : "";
+    const role = typeof body.role === "string" ? body.role : "";
+    const password = typeof body.password === "string" ? body.password : "";
+    if (!/^[a-zA-Z0-9._-]{3,32}$/u.test(username)) {
+      throw new HttpError(400, "Username harus 3-32 karakter: huruf, angka, titik, garis bawah, atau tanda hubung.");
+    }
+    if (!USER_ROLES.includes(role) || role === "Admin") throw new HttpError(400, "Pilih peran selain Admin.");
+    if (password.length < 12 || password.length > 72) throw new HttpError(400, "Password harus 12-72 karakter.");
+
+    const { data: existing } = await supabaseRequest(restQuery("profiles", {
+      select: "id",
+      username: `ilike.${username.replace(/[\\%_*]/gu, "")}`,
+      limit: 1,
+    }));
+    if (existing?.length) throw new HttpError(409, "Username sudah dipakai.");
+
+    const { data: created } = await supabaseRequest("/auth/v1/admin/users", {
+      method: "POST",
+      body: { email: usernameEmail(username), password, email_confirm: true, user_metadata: { username } },
+    });
+    try {
+      await supabaseRequest("/rest/v1/profiles", {
+        method: "POST",
+        body: { id: created.id, username, role },
+        prefer: "return=minimal",
+      });
+    } catch (error) {
+      try {
+        await supabaseRequest(`/auth/v1/admin/users/${created.id}`, { method: "DELETE" });
+      } catch (cleanupError) {
+        console.error("Pembersihan akun Auth gagal:", (cleanupError as Error).message);
+      }
+      throw error;
+    }
+    return json(request, 201, { username, role });
   }
 
   if (method === "GET" && path === "/admin/reports") return await listReports(request, url, profile);

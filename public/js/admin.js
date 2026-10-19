@@ -351,6 +351,65 @@ async function loadUsers() {
   assignmentForm.hidden = false;
 }
 
+document.querySelector("#manage-accounts").addEventListener("click", async () => {
+  accountError.hidden = true;
+  accountDialog.showModal();
+  try {
+    await renderAccounts();
+  } catch (error) {
+    showToast(error.message, true);
+  }
+});
+document.querySelector("[data-close-accounts]").addEventListener("click", () => accountDialog.close());
+
+accountForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  accountError.hidden = true;
+  const submitButton = accountForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  try {
+    const formData = new FormData(accountForm);
+    const created = await apiFetch("/admin/users", {
+      method: "POST",
+      body: JSON.stringify({
+        username: formData.get("username"),
+        role: formData.get("role"),
+        password: formData.get("password"),
+      }),
+    });
+    accountForm.reset();
+    showToast(`Akun ${created.username} (${created.role}) berhasil dibuat.`);
+    await Promise.all([renderAccounts(), loadUsers()]);
+  } catch (error) {
+    accountError.textContent = error.message;
+    accountError.hidden = false;
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+const accountDialog = document.querySelector("#account-dialog");
+const accountForm = document.querySelector("#account-form");
+const accountError = document.querySelector("#account-error");
+
+async function renderAccounts() {
+  const { users } = await apiFetch("/admin/users");
+  const list = document.querySelector("#account-list");
+  const title = document.createElement("h3");
+  title.textContent = `Akun aktif (${users.length})`;
+  const items = document.createElement("ul");
+  users.forEach((user) => {
+    const item = document.createElement("li");
+    const name = document.createElement("strong");
+    name.textContent = user.username;
+    const role = document.createElement("span");
+    role.textContent = user.role;
+    item.append(name, role);
+    items.append(item);
+  });
+  list.replaceChildren(title, items);
+}
+
 async function openReport(id) {
   try {
     const { report } = await apiFetch(`/admin/reports/${encodeURIComponent(id)}`);
@@ -404,6 +463,7 @@ async function bootstrap() {
     document.querySelector(".admin-identity strong").textContent = currentUser.username;
     document.querySelector(".admin-identity small").textContent = currentUser.role;
     document.querySelector("#admin-logout").hidden = false;
+    document.querySelector("#manage-accounts").hidden = currentUser.role !== "Admin";
     document.querySelector(".admin-main").hidden = false;
     loginDialog.close();
     await loadReports();
