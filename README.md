@@ -79,4 +79,4 @@ AI menerima kategori, tanggal/waktu kejadian, dan kronologi setelah nama pelapor
 - `POST /auth/login`, `/auth/refresh`, `/auth/logout`, `GET /auth/me` — login username/password; sesi memakai token Bearer yang disimpan di `sessionStorage` tab.
 - `GET /admin/reports`, `GET /admin/reports/:id`, `GET /admin/evidence/:id`
 - `GET /admin/users`, `POST /admin/users` (Admin: membuat akun petugas selain Admin)
-- `PATCH /admin/reports/:id/assignment` (Admin), `PATCH /admin/reports/:id` (status dan catatan)
+- `PATCH /admin/reports/:id/assignment` (Admin, body `{ "role": "PKM" }`; semua akun pada peran itu dapat melihat laporan), `PATCH /admin/reports/:id` (status dan catatan)

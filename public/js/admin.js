@@ -346,10 +346,9 @@ async function loadUsers() {
     assignmentForm.hidden = true;
     return;
   }
-  const { users } = await apiFetch("/admin/users");
-  assigneeSelect.replaceChildren(new Option("Pilih akun petugas", ""));
-  users.filter((user) => user.role !== "Admin").forEach((user) => {
-    assigneeSelect.add(new Option(`${user.username} — ${user.role}`, user.username));
+  assigneeSelect.replaceChildren(new Option("Pilih peran penerima", ""));
+  accountForm.elements.role.querySelectorAll("option[value]:not([value=''])").forEach((option) => {
+    assigneeSelect.add(new Option(option.value, option.value));
   });
   assignmentForm.hidden = false;
 }
@@ -553,9 +552,9 @@ assignmentForm.addEventListener("submit", async (event) => {
   try {
     const result = await apiFetch(`/admin/reports/${encodeURIComponent(activeReportId)}/assignment`, {
       method: "PATCH",
-      body: JSON.stringify({ username: assigneeSelect.value }),
+      body: JSON.stringify({ role: assigneeSelect.value }),
     });
-    showToast(`Laporan ditugaskan kepada ${result.assignedTo} (${result.assignedRole}).`);
+    showToast(`Laporan diserahkan ke peran ${result.assignedRole}. Semua akun peran ini dapat melihatnya.`);
     await loadReports();
     await openReport(activeReportId);
   } catch (error) {

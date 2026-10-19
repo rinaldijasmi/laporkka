@@ -643,22 +643,14 @@ async function route(request: Request, url: URL, path: string) {
     if (method === "PATCH" && assignment) {
       if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat menugaskan laporan.");
       const body = await readJson(request);
-      const username = typeof body.username === "string" ? body.username.trim() : "";
-      if (!username) throw new HttpError(400, "Pilih username petugas untuk penugasan.");
-      const { data: targets } = await supabaseRequest(restQuery("profiles", {
-        select: "id,username,role",
-        username: `eq.${username}`,
-        active: "eq.true",
-        limit: 1,
-      }));
-      const target = targets?.[0];
-      if (!target || target.role === "Admin") throw new HttpError(400, "Pilih akun aktif selain Admin.");
+      const role = typeof body.role === "string" ? body.role.trim() : "";
+      if (!USER_ROLES.includes(role) || role === "Admin") throw new HttpError(400, "Pilih peran penerima selain Admin.");
       await supabaseRequest(restQuery("reports", { id: `eq.${reportId}` }), {
         method: "PATCH",
-        body: { assigned_role: target.role, assigned_to: target.id, updated_at: new Date().toISOString() },
+        body: { assigned_role: role, assigned_to: null, updated_at: new Date().toISOString() },
         prefer: "return=minimal",
       });
-      return json(request, 200, { assignedTo: target.username, assignedRole: target.role });
+      return json(request, 200, { assignedRole: role });
     }
 
     if (method === "PATCH" && !assignment) {
