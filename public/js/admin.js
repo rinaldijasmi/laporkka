@@ -10,6 +10,9 @@ const assignmentForm = document.querySelector("#assignment-form");
 const assigneeSelect = document.querySelector("#assignee-select");
 const followUpForm = document.querySelector("#follow-up-form");
 const toast = document.querySelector("#admin-toast");
+const accountDialog = document.querySelector("#account-dialog");
+const accountForm = document.querySelector("#account-form");
+const accountError = document.querySelector("#account-error");
 let activeReportId = null;
 let currentUser = null;
 let reports = [];
@@ -387,10 +390,6 @@ accountForm.addEventListener("submit", async (event) => {
     submitButton.disabled = false;
   }
 });
-
-const accountDialog = document.querySelector("#account-dialog");
-const accountForm = document.querySelector("#account-form");
-const accountError = document.querySelector("#account-error");
 
 async function renderAccounts() {
   const { users } = await apiFetch("/admin/users");
