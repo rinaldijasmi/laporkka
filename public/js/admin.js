@@ -81,9 +81,14 @@ async function apiFetch(url, options = {}) {
 function showToast(message, isError = false) {
   toast.textContent = message;
   toast.classList.toggle("toast-error", isError);
+  if (toast.matches(":popover-open")) toast.hidePopover();
+  toast.showPopover();
   toast.classList.add("visible");
   window.clearTimeout(toastTimeout);
-  toastTimeout = window.setTimeout(() => toast.classList.remove("visible"), 3200);
+  toastTimeout = window.setTimeout(() => {
+    toast.classList.remove("visible");
+    if (toast.matches(":popover-open")) toast.hidePopover();
+  }, 4500);
 }
 
 function showSessionExpired() {
