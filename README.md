@@ -38,6 +38,15 @@ GitHub Pages hanya dapat menyajikan folder `public/`; backend Node.js harus diho
 
 Di production, set `APP_ORIGIN` ke origin HTTPS aplikasi dan `SESSION_COOKIE_SECURE=true`. Jangan deploy service-role key ke browser.
 
+## Deploy ke Render
+
+1. Di [render.com](https://render.com), pilih **New → Blueprint** dan hubungkan repo ini; konfigurasi dibaca dari [`render.yaml`](./render.yaml).
+2. Isi `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, dan `OPENAI_API_KEY` di dashboard Render (jangan di git).
+3. Setelah layanan mendapat alamat (mis. `https://laporkka.onrender.com`), isi `APP_ORIGIN` dengan alamat persis itu tanpa garis miring di akhir, lalu deploy ulang.
+4. Akun petugas tetap dibuat dari komputer lokal dengan `npm run create-user` (menggunakan `.env` yang mengarah ke project Supabase yang sama).
+
+Paket gratis Render tertidur setelah tidak aktif, sehingga akses pertama bisa lambat.
+
 ## Peran
 
 Admin dapat melihat seluruh laporan dan menugaskannya kepada akun aktif dengan peran `PKKM`, `PKM`, `ASUS`, `Akademik`, atau unit Kemahasiswaan yang tersedia. Petugas selain Admin hanya dapat melihat laporan yang ditugaskan kepadanya.

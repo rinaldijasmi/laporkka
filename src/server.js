@@ -122,7 +122,10 @@ function requireSameOrigin(req, res) {
 
 function checkRateLimit(req, key, max, windowMs) {
   const now = Date.now();
-  const ip = req.socket.remoteAddress || "unknown";
+  const forwarded = process.env.TRUST_PROXY === "true"
+    ? req.headers["x-forwarded-for"]?.split(",").at(-1)?.trim()
+    : null;
+  const ip = forwarded || req.socket.remoteAddress || "unknown";
   const bucketKey = `${key}:${ip}`;
   let bucket = limitStore.get(bucketKey);
   if (!bucket || bucket.expiresAt <= now) {
