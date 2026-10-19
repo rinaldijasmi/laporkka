@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dashboard admin Direktorat Kemahasiswaan, Karier, dan Alumni untuk meninjau laporan mahasiswa." />
+    <meta name="theme-color" content="#7f1d1d" />
+    <title>Dashboard Admin — LaporKKA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <script src="js/admin.js" defer></script>
+  </head>
+  <body class="admin-page">
+    <div class="topline">
+      <div class="topline-inner">
+        <span class="topline-label"><span class="status-dot"></span> RUANG KERJA PETUGAS KKA</span>
+        <span class="topline-note">LaporKKA · Administrasi laporan</span>
+      </div>
+    </div>
+
+    <header class="site-header admin-header">
+      <a class="brand" href="index.html" aria-label="LaporKKA beranda">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="M24 7v31M15 13h18M12 16l-7 14h14l-7-14Zm24 0-7 14h14l-7-14ZM18 40h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="brand-copy"><strong>Lapor<span>KKA</span></strong><small>Direktorat Kemahasiswaan, Karier &amp; Alumni</small></span>
+      </a>
+      <div class="admin-header-right">
+        <span class="demo-badge"><span></span> PRATINJAU SIMULASI</span>
+        <div class="admin-identity">
+          <span class="admin-avatar" aria-hidden="true">A</span>
+          <span><strong>Admin KKA</strong><small>Petugas</small></span>
+        </div>
+        <button class="admin-logout" id="admin-logout" type="button" hidden>Keluar</button>
+      </div>
+    </header>
+
+    <main class="admin-main" hidden>
+      <div class="admin-page-heading">
+        <div>
+          <div class="breadcrumb"><a href="index.html">LaporKKA</a><span>/</span><span>Dashboard Admin</span></div>
+          <div class="heading-row">
+            <div>
+              <span class="form-kicker">DIREKTORAT KKA</span>
+              <h1>Dashboard Laporan</h1>
+              <p>Pantau dan tindak lanjuti laporan yang masuk.</p>
+            </div>
+            <button class="admin-refresh" id="refresh-dashboard" type="button"><span aria-hidden="true">↻</span> Perbarui</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-warning" role="note" id="admin-notice">
+        <span class="warning-icon" aria-hidden="true">i</span>
+        <p><strong>Data laporan bersifat rahasia.</strong> Tinjau analisis AI sebagai saran awal dan pastikan dasar pasal pada dokumen resmi sebelum menentukan penanganan.</p>
+      </div>
+
+      <section class="admin-stats" aria-label="Ringkasan laporan">
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-red" aria-hidden="true">▤</span>
+          <div><span class="stat-label">Total laporan</span><strong id="stat-total">0</strong><small>Semua laporan tercatat</small></div>
+          <span class="stat-mark" aria-hidden="true">01</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-blue" aria-hidden="true">◷</span>
+          <div><span class="stat-label">Menunggu ditinjau</span><strong id="stat-incoming">0</strong><small>Status laporan masuk</small></div>
+          <span class="stat-mark" aria-hidden="true">02</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-amber" aria-hidden="true">↗</span>
+          <div><span class="stat-label">Sedang diproses</span><strong id="stat-processing">0</strong><small>Dalam tindak lanjut</small></div>
+          <span class="stat-mark" aria-hidden="true">03</span>
+        </article>
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-green" aria-hidden="true">✓</span>
+          <div><span class="stat-label">Selesai</span><strong id="stat-completed">0</strong><small>Laporan telah ditangani</small></div>
+          <span class="stat-mark" aria-hidden="true">04</span>
+        </article>
+      </section>
+
+      <section class="report-panel" aria-labelledby="reports-title">
+        <div class="panel-heading">
+          <div>
+            <div class="panel-title-line"><span class="panel-accent"></span><h2 id="reports-title">Daftar Laporan</h2></div>
+            <p>Tinjau laporan, identitas terlapor, dan status tindak lanjut.</p>
+          </div>
+          <span class="result-count"><strong id="visible-count">0</strong> laporan</span>
+        </div>
+
+        <div class="report-controls">
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input id="report-search" type="search" placeholder="Cari ID laporan, nama, atau NIM terlapor..." autocomplete="off" />
+            <kbd>⌘ K</kbd>
+          </label>
+          <label class="filter-control">
+            <span class="sr-only">Filter status</span>
+            <select id="status-filter">
+              <option value="all">Semua status</option>
+              <option value="masuk">Masuk</option>
+              <option value="diproses">Diproses</option>
+              <option value="selesai">Selesai</option>
+            </select>
+          </label>
+          <label class="filter-control category-filter">
+            <span class="sr-only">Filter kategori</span>
+            <select id="category-filter">
+              <option value="all">Semua kategori</option>
+              <option>Akademik</option>
+              <option>Etika dan perilaku sosial</option>
+              <option>Kekerasan, perundungan, dan pelecehan</option>
+              <option>Digital dan siber</option>
+              <option>Organisasi dan kegiatan mahasiswa</option>
+              <option>Fasilitas, lingkungan, dan keamanan</option>
+              <option>Komersial, perjudian, dan politik</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="table-scroll">
+          <table class="reports-table">
+            <thead>
+              <tr>
+                <th scope="col">ID laporan / tanggal</th>
+                <th scope="col">Terlapor</th>
+                <th scope="col">Kategori</th>
+                <th scope="col">Pelapor</th>
+                <th scope="col">Status</th>
+                <th scope="col"><span class="sr-only">Aksi</span></th>
+              </tr>
+            </thead>
+            <tbody id="reports-body"></tbody>
+          </table>
+          <div class="empty-state" id="empty-state" hidden>
+            <span class="empty-icon" aria-hidden="true">⌕</span>
+            <strong>Tidak ada laporan yang cocok</strong>
+            <span>Coba ubah kata pencarian atau filter yang dipilih.</span>
+          </div>
+        </div>
+        <div class="table-footer"><span id="table-message">Laporan ditampilkan sesuai hak akses akun</span><span><span class="mini-dot"></span> <span id="last-updated">Memuat...</span></span></div>
+        <div class="pagination" id="pagination">
+          <span id="pagination-summary">Halaman 1 dari 1</span>
+          <div>
+            <button id="previous-page" type="button" aria-label="Halaman sebelumnya">← Sebelumnya</button>
+            <button id="next-page" type="button" aria-label="Halaman berikutnya">Berikutnya →</button>
+          </div>
+        </div>
+      </section>
+      <p class="admin-footnote"><span aria-hidden="true">♧</span> Informasi laporan bersifat rahasia. Bagikan akses hanya kepada petugas yang berwenang.</p>
+    </main>
+
+    <dialog class="feature-dialog auth-dialog" id="login-dialog" aria-labelledby="login-title">
+      <form id="login-form">
+        <div class="dialog-header">
+          <div>
+            <span class="form-kicker">AKSES PETUGAS</span>
+            <h2 id="login-title">Masuk ke LaporKKA</h2>
+          </div>
+        </div>
+        <p class="dialog-intro">Gunakan username dan password akun yang dibuat oleh Admin.</p>
+        <label class="field"><span>Username</span><input name="username" autocomplete="username" required minlength="3" maxlength="32" /></label>
+        <label class="field login-password"><span>Password</span><input name="password" type="password" autocomplete="current-password" required /></label>
+        <p class="login-error" id="login-error" role="alert" hidden></p>
+        <div class="dialog-actions"><button class="button button-primary" type="submit">Masuk <span class="button-arrow" aria-hidden="true">→</span></button></div>
+      </form>
+    </dialog>
+
+    <dialog class="feature-dialog report-dialog" id="report-dialog" aria-labelledby="detail-title">
+      <div class="dialog-header">
+        <div>
+          <span class="form-kicker">DETAIL LAPORAN <span class="detail-token" id="detail-token"></span></span>
+          <h2 id="detail-title">Tinjau Laporan</h2>
+        </div>
+        <button class="dialog-close" type="button" data-close-detail aria-label="Tutup">×</button>
+      </div>
+      <div class="detail-content" id="detail-content"></div>
+      <section class="ai-preview" id="ai-preview" aria-label="Pratinjau klasifikasi AI"></section>
+      <form class="assignment-form" id="assignment-form" hidden>
+        <label class="field">
+          <span>Serahkan laporan ke petugas / peran</span>
+          <select id="assignee-select" required><option value="">Pilih akun petugas</option></select>
+        </label>
+        <button class="button button-quiet" type="submit">Tetapkan penanggung jawab</button>
+      </form>
+      <form id="follow-up-form">
+        <label class="field">
+          <span>Catatan tindak lanjut <span class="required">*</span></span>
+          <textarea id="follow-up-note" rows="3" maxlength="1000" placeholder="Catat langkah penanganan atau informasi tindak lanjut..." required></textarea>
+        </label>
+        <div class="follow-up-actions">
+          <label class="field status-update-field">
+            <span>Perbarui status</span>
+            <select id="detail-status">
+              <option value="masuk">Masuk</option>
+              <option value="diproses">Diproses</option>
+              <option value="selesai">Selesai</option>
+            </select>
+          </label>
+          <button class="button button-primary" type="submit">Simpan tindak lanjut <span class="button-arrow" aria-hidden="true">→</span></button>
+        </div>
+        <div class="activity-log" id="activity-log"></div>
+        <p class="admin-detail-demo-note">Catatan tindak lanjut dapat dilihat pelapor melalui token laporan.</p>
+      </form>
+    </dialog>
+
+    <dialog class="feature-dialog auth-dialog" id="session-expired-dialog" aria-labelledby="session-expired-title">
+      <div class="dialog-header"><div><span class="form-kicker">SESI BERAKHIR</span><h2 id="session-expired-title">Masuk kembali</h2></div></div>
+      <p class="dialog-intro">Sesi Anda berakhir. Muat ulang halaman untuk masuk kembali.</p>
+      <div class="dialog-actions"><button class="button button-primary" id="reload-admin" type="button">Muat ulang</button></div>
+    </dialog>
+
+    <div class="toast" id="admin-toast" role="status" aria-live="polite"></div>
+    <footer class="site-footer admin-footer">
+      <a class="footer-brand" href="index.html"><span class="footer-mark" aria-hidden="true">L</span><strong>LaporKKA</strong></a>
+      <span>Dashboard Admin KKA · Pratinjau</span>
+      <a class="footer-back" href="index.html">Kembali ke halaman pelaporan <span aria-hidden="true">→</span></a>
+    </footer>
+  </body>
+</html>
