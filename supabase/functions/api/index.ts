@@ -187,6 +187,11 @@ function validateReport(body: Record<string, string>) {
     Number.isNaN(date.getTime()) ||
     date.toISOString().slice(0, 10) !== body.incidentDate
   ) return "Tanggal kejadian tidak valid.";
+  const todayJakarta = new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+  if (body.incidentDate > todayJakarta) return "Tanggal kejadian tidak boleh di masa depan.";
+  if (!["on", "true", "1"].includes(String(body.goodFaith ?? "").toLowerCase())) {
+    return "Anda harus menyatakan bahwa laporan dibuat dengan itikad baik.";
+  }
   if (body.description.trim().length < 30 || body.description.length > 3000) {
     return "Kronologi harus berisi 30-3000 karakter.";
   }

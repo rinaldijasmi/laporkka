@@ -15,9 +15,9 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=5" />
-    <script src="js/config.js?v=5"></script>
-    <script src="js/app.js?v=5" defer></script>
+    <link rel="stylesheet" href="css/styles.css?v=6" />
+    <script src="js/config.js?v=6"></script>
+    <script src="js/app.js?v=6" defer></script>
   </head>
   <body>
     <div class="topline">
@@ -231,7 +231,7 @@
             <div class="demo-notice" id="demo-notice" role="status" hidden>
               <strong>Laporan berhasil dikirim</strong>
               <span class="token-value" id="issued-token"></span>
-              <span id="submission-message">Simpan token rahasia ini untuk melacak status laporan.</span>
+              <span id="submission-message">Salin dan simpan token rahasia ini sekarang. Token hanya ditampilkan sekali dan dibutuhkan untuk melacak status laporan.</span>
               <button class="copy-token" id="copy-token" type="button">Salin token</button>
             </div>
             <div class="demo-notice submission-error" id="submission-error" role="alert" hidden></div>
@@ -300,7 +300,7 @@
           <button class="button button-quiet" type="button" data-close-dialog>Tutup</button>
           <button class="button button-primary" type="submit">Periksa status <span class="button-arrow" aria-hidden="true">→</span></button>
         </div>
-        <p class="tracking-demo-note">Pelacakan saat ini hanya simulasi pada sesi browser ini. Laporan dan status resmi memerlukan backend.</p>
+        <p class="tracking-demo-note">Token hanya diberikan sekali saat laporan dikirim dan tidak dapat dipulihkan jika hilang.</p>
       </form>
     </dialog>
 

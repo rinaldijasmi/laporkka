@@ -251,7 +251,7 @@ function renderAnalysis(analysis, aiStatus) {
     articleLink.href = "assets/kode-etik-mahasiswa-2026.pdf";
     articleLink.target = "_blank";
     articleLink.rel = "noopener noreferrer";
-    articleLink.textContent = `Pasal ${match.article} — ${match.title}`;
+    articleLink.textContent = /^Pasal\s/iu.test(match.title) ? match.title : `Pasal ${match.article} — ${match.title}`;
     const relevance = document.createElement("p");
     relevance.textContent = match.relevance;
     const basis = document.createElement("small");

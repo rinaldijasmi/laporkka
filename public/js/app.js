@@ -122,17 +122,25 @@ description.addEventListener("input", () => {
   characterCount.textContent = `${description.value.length} / 3000`;
 });
 
+let keepNoticeOnReset = false;
+
 form.addEventListener("reset", () => {
+  const keepNotice = keepNoticeOnReset;
+  keepNoticeOnReset = false;
   window.setTimeout(() => {
     selectedFiles = [];
     renderFiles();
     showFileError();
-    demoNotice.hidden = true;
+    if (!keepNotice) {
+      demoNotice.hidden = true;
+      document.querySelector("#copy-token").textContent = "Salin token";
+    }
     showSubmissionError();
-    document.querySelector("#copy-token").textContent = "Salin token";
     characterCount.textContent = "0 / 3000";
   });
 });
+
+form.elements.incidentDate.max = new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
 
 document.querySelector("#open-policy").addEventListener("click", () => {
   document.querySelector("#policy-dialog").showModal();
@@ -227,8 +235,14 @@ form.addEventListener("submit", (event) => {
 
   fetch(`${window.LAPORKKA_API_BASE}/reports`, { method: "POST", body: payload })
     .then(async (response) => {
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Laporan gagal dikirim.");
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error || (response.status === 413 || response.status === 502
+          ? "Ukuran lampiran terlalu besar (maksimal 25 MB per laporan)."
+          : "Laporan gagal dikirim."));
+      }
+      keepNoticeOnReset = true;
+      form.reset();
       issuedToken.textContent = result.token;
       demoNotice.hidden = false;
       demoNotice.scrollIntoView({ behavior: "smooth", block: "nearest" });
