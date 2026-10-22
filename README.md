@@ -69,6 +69,15 @@ Situs tersedia di `https://laporkka.pages.dev`. Tambahkan origin-nya ke backend 
 supabase secrets set ALLOWED_ORIGINS=https://USERNAME.github.io,https://laporkka.pages.dev --project-ref <PROJECT_REF>
 ```
 
+### Deploy otomatis dari GitHub
+
+Workflow `.github/workflows/cloudflare-pages.yml` men-deploy `public/` ke Cloudflare Pages setiap push ke `main` yang mengubah `public/`. Tambahkan dua secret di GitHub (Settings → Secrets and variables → Actions):
+
+- `CLOUDFLARE_API_TOKEN` — token dengan izin **Account → Cloudflare Pages → Edit**
+- `CLOUDFLARE_ACCOUNT_ID` — ID akun Cloudflare
+
+Domain kustom: `https://lapor.kkatelkomuniversity.com` (CNAME `lapor` → `laporkka.pages.dev`, proxied). Tambahkan origin-nya ke `ALLOWED_ORIGINS`.
+
 ## Pratinjau lokal
 
 ```sh
