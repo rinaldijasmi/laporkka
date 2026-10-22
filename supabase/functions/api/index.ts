@@ -366,9 +366,53 @@ async function listReports(request: Request, url: URL, profile: Record<string, a
   });
 }
 
+function clientIp(request: Request) {
+  return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+async function sha256Hex(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+// Batas longgar per IP (satu kelas di WiFi yang sama tetap aman); disimpan di database dengan IP ter-hash.
+async function checkReportIpLimit(request: Request) {
+  const bucket = `report:${(await sha256Hex(clientIp(request))).slice(0, 32)}`;
+  try {
+    const allowed = await supabaseRequest("/rest/v1/rpc/hit_rate_limit", {
+      method: "POST",
+      body: { p_bucket: bucket, p_max: 60, p_window_seconds: 3600 },
+    });
+    return allowed !== false;
+  } catch {
+    return true;
+  }
+}
+
+async function verifyTurnstile(request: Request, token: string) {
+  const secret = Deno.env.get("TURNSTILE_SECRET_KEY");
+  if (!secret) return;
+  if (!token) throw new HttpError(400, "Verifikasi keamanan belum selesai. Muat ulang halaman lalu coba lagi.");
+  const body = new URLSearchParams({ secret, response: token });
+  const ip = clientIp(request);
+  if (ip !== "unknown") body.set("remoteip", ip);
+  let result: { success?: boolean } = {};
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body,
+      signal: AbortSignal.timeout(10_000),
+    });
+    result = await response.json();
+  } catch {
+    throw new HttpError(503, "Verifikasi keamanan sementara tidak tersedia. Coba lagi sebentar.");
+  }
+  if (!result.success) throw new HttpError(400, "Verifikasi keamanan gagal atau kedaluwarsa. Silakan coba lagi.");
+}
+
 async function submitReport(request: Request) {
-  if (!checkRateLimit(request, "report", 10, 60 * 60 * 1000)) {
-    throw new HttpError(429, "Batas pengiriman laporan sementara tercapai. Coba kembali nanti.");
+  if (!(await checkReportIpLimit(request))) {
+    throw new HttpError(429, "Terlalu banyak laporan dari jaringan ini dalam satu jam. Coba kembali nanti.");
   }
   if (Number(request.headers.get("content-length") || 0) > maxUploadBytes + 200 * 1024) {
     throw new HttpError(413, "Ukuran permintaan terlalu besar.");
@@ -395,6 +439,8 @@ async function submitReport(request: Request) {
     }
   }
   if (files.length > maxFiles) throw new HttpError(400, `Maksimal ${maxFiles} berkas bukti.`);
+
+  await verifyTurnstile(request, fields["cf-turnstile-response"] || "");
 
   const invalid = validateReport(fields);
   if (invalid) throw new HttpError(400, invalid);

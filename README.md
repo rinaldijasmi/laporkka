@@ -74,6 +74,14 @@ Workflow `.github/workflows/cloudflare-pages.yml` men-deploy `public/` ke Cloudf
 
 Domain kustom: `https://lapor.kkatelkomuniversity.com` (CNAME `lapor` → `laporkka.pages.dev`, proxied). Tambahkan origin-nya ke `ALLOWED_ORIGINS`.
 
+## Anti-spam (Turnstile + batas IP)
+
+- Batas longgar 60 laporan/jam per IP (di-hash, disimpan di tabel `rate_limits`, migrasi `003_rate_limits.sql`) agar satu kelas di WiFi yang sama tetap aman.
+- Cloudflare Turnstile: buat widget di dashboard Cloudflare (Turnstile), lalu
+  1. isi site key di `public/js/config.js` (`LAPORKKA_TURNSTILE_SITE_KEY`),
+  2. `supabase secrets set TURNSTILE_SECRET_KEY=... --project-ref jaxscpcjkztdpxdfwktg`.
+  Selama secret belum diisi, verifikasi Turnstile tidak diwajibkan.
+
 ## Pratinjau lokal
 
 ```sh

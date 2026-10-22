@@ -210,6 +210,20 @@ trackingForm.addEventListener("submit", (event) => {
   });
 });
 
+let turnstileWidgetId = null;
+const turnstileSiteKey = window.LAPORKKA_TURNSTILE_SITE_KEY;
+if (turnstileSiteKey) {
+  const turnstileBox = document.querySelector("#turnstile-box");
+  turnstileBox.hidden = false;
+  window.onTurnstileReady = () => {
+    turnstileWidgetId = window.turnstile.render(turnstileBox, { sitekey: turnstileSiteKey, language: "id" });
+  };
+  const script = document.createElement("script");
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileReady";
+  script.async = true;
+  document.head.append(script);
+}
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   demoNotice.hidden = true;
@@ -224,6 +238,11 @@ form.addEventListener("submit", (event) => {
   }
   if (fileError.textContent) {
     fileError.focus();
+    return;
+  }
+
+  if (turnstileSiteKey && !(turnstileWidgetId !== null && window.turnstile.getResponse(turnstileWidgetId))) {
+    showSubmissionError("Selesaikan verifikasi keamanan terlebih dahulu sebelum mengirim laporan.");
     return;
   }
 
@@ -253,6 +272,7 @@ form.addEventListener("submit", (event) => {
       submissionError.scrollIntoView({ behavior: "smooth", block: "nearest" });
     })
     .finally(() => {
+      if (turnstileWidgetId !== null) window.turnstile.reset(turnstileWidgetId);
       submitButton.disabled = false;
       submitButton.innerHTML = submitLabel;
     });
