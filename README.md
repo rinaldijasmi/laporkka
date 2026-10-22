@@ -56,6 +56,19 @@ Jika PDF Kode Etik diganti, jalankan `npm run build:articles` lalu deploy ulang 
 
 `ALLOWED_ORIGINS` harus berisi origin situs Pages (tanpa path, mis. `https://USERNAME.github.io`).
 
+## Deploy frontend ke Cloudflare Pages
+
+```bash
+npx wrangler login                     # sekali saja
+npm run deploy:cloudflare              # mengunggah folder public/ ke project "laporkka"
+```
+
+Situs tersedia di `https://laporkka.pages.dev`. Tambahkan origin-nya ke backend (pisahkan dengan koma):
+
+```bash
+supabase secrets set ALLOWED_ORIGINS=https://USERNAME.github.io,https://laporkka.pages.dev --project-ref <PROJECT_REF>
+```
+
 ## Pratinjau lokal
 
 ```sh
