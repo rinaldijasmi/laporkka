@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/styles.css?v=7" />
-    <link rel="stylesheet" href="css/admin.css?v=7" />
-    <script src="js/config.js?v=7"></script>
-    <script src="js/admin.js?v=7" defer></script>
+    <link rel="stylesheet" href="css/styles.css?v=8" />
+    <link rel="stylesheet" href="css/admin.css?v=8" />
+    <script src="js/config.js?v=8"></script>
+    <script src="js/admin.js?v=8" defer></script>
   </head>
   <body class="admin-page">
     <div class="topline">
@@ -224,21 +224,6 @@
           <span>Peran</span>
           <select name="role" required>
             <option value="">Pilih peran</option>
-            <option value="PKKM">PKKM</option>
-            <option value="PKM">PKM</option>
-            <option value="ASUS">ASUS</option>
-            <option value="Akademik">Akademik</option>
-            <option value="Kemahasiswaan FTE">Kemahasiswaan FTE</option>
-            <option value="Kemahasiswaan FIF">Kemahasiswaan FIF</option>
-            <option value="Kemahasiswaan FRI">Kemahasiswaan FRI</option>
-            <option value="Kemahasiswa FKS">Kemahasiswa FKS</option>
-            <option value="Kemahasiswaan FKB">Kemahasiswaan FKB</option>
-            <option value="Kemahasiswaan FIK">Kemahasiswaan FIK</option>
-            <option value="Kemahasiswaan FIT">Kemahasiswaan FIT</option>
-            <option value="Kemahasiswaan FK">Kemahasiswaan FK</option>
-            <option value="Kemahasiswaan TUJ">Kemahasiswaan TUJ</option>
-            <option value="Kemahasiswaan TUS">Kemahasiswaan TUS</option>
-            <option value="Kemahasiswaan TUP">Kemahasiswaan TUP</option>
           </select>
         </label>
         <label class="field"><span>Password awal (minimal 12 karakter)</span><input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="72" /></label>
@@ -246,6 +231,24 @@
         <div class="dialog-actions"><button class="button button-primary" type="submit">Buat akun <span class="button-arrow" aria-hidden="true">→</span></button></div>
       </form>
       <div class="account-list" id="account-list" aria-label="Daftar akun petugas"></div>
+      <div class="account-list role-manager" id="role-list" aria-label="Daftar peran"></div>
+      <form class="role-add" id="role-form">
+        <input name="name" placeholder="Nama peran baru" autocomplete="off" required minlength="2" maxlength="40" aria-label="Nama peran baru" />
+        <button class="button button-primary" type="submit">Tambah peran</button>
+      </form>
+    </dialog>
+
+    <dialog class="feature-dialog action-dialog" id="action-dialog" aria-labelledby="action-title">
+      <form id="action-form" method="dialog">
+        <div class="dialog-header"><div><h2 id="action-title"></h2></div></div>
+        <p class="dialog-intro" id="action-text"></p>
+        <label class="field" id="action-field"><span id="action-label"></span><input id="action-input" autocomplete="off" /></label>
+        <p class="login-error" id="action-error" role="alert" hidden></p>
+        <div class="dialog-actions">
+          <button class="button button-quiet" id="action-cancel" type="button">Batal</button>
+          <button class="button button-primary" id="action-ok" type="submit">Simpan</button>
+        </div>
+      </form>
     </dialog>
 
     <dialog class="feature-dialog auth-dialog" id="session-expired-dialog" aria-labelledby="session-expired-title">

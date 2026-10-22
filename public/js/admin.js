@@ -346,23 +346,100 @@ function renderActivity(updates) {
   });
 }
 
+let roleNames = [];
+
+function fillRoleSelect(select, placeholder) {
+  select.replaceChildren(new Option(placeholder, ""));
+  roleNames.filter((name) => name !== "Admin").forEach((name) => select.add(new Option(name, name)));
+}
+
 async function loadUsers() {
   if (currentUser.role !== "Admin") {
     assignmentForm.hidden = true;
     return;
   }
-  assigneeSelect.replaceChildren(new Option("Pilih peran penerima", ""));
-  accountForm.elements.role.querySelectorAll("option[value]:not([value=''])").forEach((option) => {
-    assigneeSelect.add(new Option(option.value, option.value));
-  });
+  const { roles } = await apiFetch("/admin/roles");
+  roleNames = roles.map((role) => role.name);
+  fillRoleSelect(assigneeSelect, "Pilih peran penerima");
+  fillRoleSelect(accountForm.elements.role, "Pilih peran");
   assignmentForm.hidden = false;
+  return roles;
+}
+
+const actionDialog = document.querySelector("#action-dialog");
+const actionForm = document.querySelector("#action-form");
+const actionInput = document.querySelector("#action-input");
+const actionError = document.querySelector("#action-error");
+
+// Dialog kecil untuk konfirmasi atau input; handler boleh melempar error agar dialog tetap terbuka.
+function askAction({ title, text = "", label = "", type = "text", value = "", confirmText = "Simpan", danger = false, onSubmit }) {
+  document.querySelector("#action-title").textContent = title;
+  document.querySelector("#action-text").textContent = text;
+  document.querySelector("#action-label").textContent = label;
+  document.querySelector("#action-field").hidden = !label;
+  actionInput.type = type;
+  actionInput.value = value;
+  actionInput.required = Boolean(label);
+  actionInput.minLength = type === "password" ? 12 : 0;
+  actionInput.maxLength = type === "password" ? 72 : 40;
+  actionInput.autocomplete = type === "password" ? "new-password" : "off";
+  const ok = document.querySelector("#action-ok");
+  ok.textContent = confirmText;
+  ok.classList.toggle("danger", danger);
+  actionError.hidden = true;
+  actionDialog.showModal();
+  if (label) actionInput.focus();
+  return new Promise((resolve) => {
+    const cleanup = () => {
+      actionForm.removeEventListener("submit", submit);
+      document.querySelector("#action-cancel").removeEventListener("click", cancel);
+      actionDialog.removeEventListener("close", cancel);
+    };
+    const cancel = () => {
+      cleanup();
+      if (actionDialog.open) actionDialog.close();
+      resolve(false);
+    };
+    const submit = async (event) => {
+      event.preventDefault();
+      ok.disabled = true;
+      try {
+        await onSubmit(actionInput.value);
+        cleanup();
+        actionDialog.close();
+        resolve(true);
+      } catch (error) {
+        actionError.textContent = error.message;
+        actionError.hidden = false;
+      } finally {
+        ok.disabled = false;
+      }
+    };
+    actionForm.addEventListener("submit", submit);
+    document.querySelector("#action-cancel").addEventListener("click", cancel);
+    actionDialog.addEventListener("close", cancel);
+  });
+}
+
+function miniButton(label, onClick, danger = false) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `mini-button${danger ? " danger" : ""}`;
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+async function refreshAccountViews() {
+  await loadUsers();
+  await Promise.all([renderAccounts(), renderRoles()]);
 }
 
 document.querySelector("#manage-accounts").addEventListener("click", async () => {
   accountError.hidden = true;
   accountDialog.showModal();
   try {
-    await renderAccounts();
+    await refreshAccountViews();
   } catch (error) {
     showToast(error.message, true);
   }
@@ -386,12 +463,29 @@ accountForm.addEventListener("submit", async (event) => {
     });
     accountForm.reset();
     showToast(`Akun ${created.username} (${created.role}) berhasil dibuat.`);
-    await Promise.all([renderAccounts(), loadUsers()]);
+    await refreshAccountViews();
   } catch (error) {
     accountError.textContent = error.message;
     accountError.hidden = false;
   } finally {
     submitButton.disabled = false;
+  }
+});
+
+document.querySelector("#role-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector("button");
+  button.disabled = true;
+  try {
+    const created = await apiFetch("/admin/roles", { method: "POST", body: JSON.stringify({ name: form.elements.name.value }) });
+    form.reset();
+    showToast(`Peran ${created.name} ditambahkan.`);
+    await refreshAccountViews();
+  } catch (error) {
+    showToast(error.message, true);
+  } finally {
+    button.disabled = false;
   }
 });
 
@@ -405,12 +499,114 @@ async function renderAccounts() {
     const item = document.createElement("li");
     const name = document.createElement("strong");
     name.textContent = user.username;
-    const role = document.createElement("span");
-    role.textContent = user.role;
-    item.append(name, role);
+    const actions = document.createElement("span");
+    actions.className = "row-actions";
+    if (user.role === "Admin") {
+      const label = document.createElement("span");
+      label.textContent = "Admin";
+      actions.append(label);
+      if (user.username === currentUser.username) actions.append(miniButton("Ganti password", () => resetPassword(user)));
+    } else {
+      const select = document.createElement("select");
+      select.setAttribute("aria-label", `Peran ${user.username}`);
+      roleNames.filter((roleName) => roleName !== "Admin").forEach((roleName) => select.add(new Option(roleName, roleName)));
+      select.value = user.role;
+      select.addEventListener("change", async () => {
+        try {
+          await apiFetch(`/admin/users/${user.id}`, { method: "PATCH", body: JSON.stringify({ role: select.value }) });
+          showToast(`Peran ${user.username} diubah menjadi ${select.value}.`);
+          await refreshAccountViews();
+        } catch (error) {
+          select.value = user.role;
+          showToast(error.message, true);
+        }
+      });
+      actions.append(select, miniButton("Reset password", () => resetPassword(user)), miniButton("Hapus", () => deleteAccount(user), true));
+    }
+    item.append(name, actions);
     items.append(item);
   });
   list.replaceChildren(title, items);
+}
+
+function resetPassword(user) {
+  return askAction({
+    title: `Reset password ${user.username}`,
+    text: "Password baru berlaku langsung. Sampaikan kepada petugas secara aman.",
+    label: "Password baru (12-72 karakter)",
+    type: "password",
+    confirmText: "Reset password",
+    onSubmit: async (value) => {
+      await apiFetch(`/admin/users/${user.id}`, { method: "PATCH", body: JSON.stringify({ password: value }) });
+      showToast(`Password ${user.username} berhasil direset.`);
+    },
+  });
+}
+
+function deleteAccount(user) {
+  return askAction({
+    title: `Hapus akun ${user.username}?`,
+    text: "Akun tidak bisa masuk lagi. Riwayat tindak lanjut dan laporan tetap tersimpan.",
+    confirmText: "Hapus akun",
+    danger: true,
+    onSubmit: async () => {
+      await apiFetch(`/admin/users/${user.id}`, { method: "DELETE" });
+      showToast(`Akun ${user.username} dihapus.`);
+      await refreshAccountViews();
+    },
+  });
+}
+
+async function renderRoles() {
+  const { roles } = await apiFetch("/admin/roles");
+  const list = document.querySelector("#role-list");
+  const title = document.createElement("h3");
+  title.textContent = `Peran (${roles.length})`;
+  const items = document.createElement("ul");
+  roles.forEach((role) => {
+    const item = document.createElement("li");
+    const name = document.createElement("strong");
+    name.textContent = role.name;
+    const actions = document.createElement("span");
+    actions.className = "row-actions";
+    const count = document.createElement("span");
+    count.textContent = `${role.users} akun`;
+    actions.append(count);
+    if (!role.locked) {
+      actions.append(miniButton("Ubah nama", () => renameRole(role)), miniButton("Hapus", () => deleteRole(role), true));
+    }
+    item.append(name, actions);
+    items.append(item);
+  });
+  list.replaceChildren(title, items);
+}
+
+function renameRole(role) {
+  return askAction({
+    title: `Ubah nama peran ${role.name}`,
+    text: "Semua akun dan laporan yang memakai peran ini ikut berganti nama.",
+    label: "Nama peran baru",
+    value: role.name,
+    onSubmit: async (value) => {
+      const result = await apiFetch(`/admin/roles/${encodeURIComponent(role.name)}`, { method: "PATCH", body: JSON.stringify({ name: value }) });
+      showToast(`Peran diubah menjadi ${result.name}.`);
+      await refreshAccountViews();
+    },
+  });
+}
+
+function deleteRole(role) {
+  return askAction({
+    title: `Hapus peran ${role.name}?`,
+    text: "Peran hanya bisa dihapus bila tidak ada akun dan laporan yang memakainya.",
+    confirmText: "Hapus peran",
+    danger: true,
+    onSubmit: async () => {
+      await apiFetch(`/admin/roles/${encodeURIComponent(role.name)}`, { method: "DELETE" });
+      showToast(`Peran ${role.name} dihapus.`);
+      await refreshAccountViews();
+    },
+  });
 }
 
 async function openReport(id) {

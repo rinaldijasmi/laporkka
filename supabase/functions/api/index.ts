@@ -1,7 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import articlesData from "../_shared/articles.json" with { type: "json" };
 import { analyzeReport } from "../_shared/ai-analysis.ts";
-import { USER_ROLES } from "../_shared/privacy.ts";
 import type { Article } from "../_shared/ai-analysis.ts";
 
 const ethicsArticles = articlesData as Article[];
@@ -36,7 +35,7 @@ function corsHeaders(request: Request) {
   const origin = request.headers.get("origin") || "";
   const headers: Record<string, string> = {
     "Access-Control-Allow-Headers": "authorization, content-type",
-    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
@@ -114,6 +113,33 @@ async function supabaseRequest(endpoint: string, options: Record<string, any> = 
   }
   const range = response.headers.get("content-range")?.split("/").at(-1);
   return { data: payload, count: range && range !== "*" ? Number(range) : null };
+}
+
+async function roleExists(name: string) {
+  if (!name) return false;
+  const { data } = await supabaseRequest(restQuery("roles", { select: "name", name: `eq.${name}`, limit: 1 }));
+  return Boolean(data?.length);
+}
+
+function cleanRoleName(value: unknown) {
+  const name = typeof value === "string" ? value.trim().replace(/\s+/gu, " ") : "";
+  if (!/^[\p{L}\p{N} ._-]{2,40}$/u.test(name)) {
+    throw new HttpError(400, "Nama peran 2-40 karakter: huruf, angka, spasi, titik, garis bawah, atau tanda hubung.");
+  }
+  if (name.toLowerCase() === "admin") throw new HttpError(400, "Nama peran Admin dicadangkan.");
+  return name;
+}
+
+async function countRows(table: string, filter: Record<string, string>) {
+  const { count } = await supabaseRequest(restQuery(table, { select: "id", ...filter }), { prefer: "count=exact", head: true });
+  return count || 0;
+}
+
+async function loadManagedUser(id: string) {
+  const { data } = await supabaseRequest(restQuery("profiles", { select: "id,username,role", id: `eq.${id}`, limit: 1 }));
+  const user = data?.[0];
+  if (!user) throw new HttpError(404, "Akun tidak ditemukan.");
+  return user;
 }
 
 function restQuery(table: string, entries: Record<string, unknown>) {
@@ -651,7 +677,7 @@ async function route(request: Request, url: URL, path: string) {
     if (!/^[a-zA-Z0-9._-]{3,32}$/u.test(username)) {
       throw new HttpError(400, "Username harus 3-32 karakter: huruf, angka, titik, garis bawah, atau tanda hubung.");
     }
-    if (!USER_ROLES.includes(role) || role === "Admin") throw new HttpError(400, "Pilih peran selain Admin.");
+    if (role === "Admin" || !(await roleExists(role))) throw new HttpError(400, "Pilih peran selain Admin.");
     if (password.length < 12 || password.length > 72) throw new HttpError(400, "Password harus 12-72 karakter.");
 
     const { data: existing } = await supabaseRequest(restQuery("profiles", {
@@ -682,6 +708,98 @@ async function route(request: Request, url: URL, path: string) {
     return json(request, 201, { username, role });
   }
 
+  if (method === "GET" && path === "/admin/roles") {
+    if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat melihat daftar peran.");
+    const [{ data: roles }, { data: users }] = await Promise.all([
+      supabaseRequest(restQuery("roles", { select: "name", order: "name.asc" })),
+      supabaseRequest(restQuery("profiles", { select: "role", active: "eq.true" })),
+    ]);
+    const counts = new Map<string, number>();
+    for (const user of users) counts.set(user.role, (counts.get(user.role) || 0) + 1);
+    return json(request, 200, {
+      roles: roles.map((role: { name: string }) => ({ name: role.name, users: counts.get(role.name) || 0, locked: role.name === "Admin" })),
+    });
+  }
+
+  if (method === "POST" && path === "/admin/roles") {
+    if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat menambah peran.");
+    const name = cleanRoleName((await readJson(request)).name);
+    const { data: existing } = await supabaseRequest(restQuery("roles", { select: "name", name: `ilike.${name.replace(/[\\%_*]/gu, "")}`, limit: 1 }));
+    if (existing?.length) throw new HttpError(409, "Peran dengan nama itu sudah ada.");
+    await supabaseRequest("/rest/v1/roles", { method: "POST", body: { name }, prefer: "return=minimal" });
+    return json(request, 201, { name });
+  }
+
+  const roleRoute = path.match(/^\/admin\/roles\/([^/]+)$/u);
+  if (roleRoute) {
+    if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat mengelola peran.");
+    let current: string;
+    try {
+      current = decodeURIComponent(roleRoute[1]);
+    } catch {
+      throw new HttpError(400, "Nama peran tidak valid.");
+    }
+    if (current === "Admin") throw new HttpError(400, "Peran Admin tidak dapat diubah atau dihapus.");
+    if (!(await roleExists(current))) throw new HttpError(404, "Peran tidak ditemukan.");
+
+    if (method === "PATCH") {
+      const name = cleanRoleName((await readJson(request)).name);
+      if (name !== current) {
+        const { data: existing } = await supabaseRequest(restQuery("roles", { select: "name", name: `ilike.${name.replace(/[\\%_*]/gu, "")}`, limit: 1 }));
+        if (existing?.length && existing[0].name !== current) throw new HttpError(409, "Peran dengan nama itu sudah ada.");
+        await supabaseRequest(restQuery("roles", { name: `eq.${current}` }), { method: "PATCH", body: { name }, prefer: "return=minimal" });
+      }
+      return json(request, 200, { name });
+    }
+
+    if (method === "DELETE") {
+      const [accounts, reports] = await Promise.all([
+        countRows("profiles", { role: `eq.${current}` }),
+        countRows("reports", { assigned_role: `eq.${current}` }),
+      ]);
+      if (accounts) throw new HttpError(409, `Peran masih dipakai ${accounts} akun. Pindahkan atau hapus akun tersebut dulu.`);
+      if (reports) throw new HttpError(409, `Peran masih menerima ${reports} laporan. Serahkan laporan itu ke peran lain dulu.`);
+      await supabaseRequest(restQuery("roles", { name: `eq.${current}` }), { method: "DELETE", prefer: "return=minimal" });
+      return json(request, 200, { deleted: current });
+    }
+  }
+
+  const userRoute = path.match(/^\/admin\/users\/([0-9a-f-]{36})$/iu);
+  if (userRoute) {
+    if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat mengelola akun petugas.");
+    const target = await loadManagedUser(userRoute[1]);
+    const isSelf = target.id === profile.id;
+
+    if (method === "PATCH") {
+      const body = await readJson(request);
+      const changes: string[] = [];
+      if (body.role !== undefined) {
+        const role = typeof body.role === "string" ? body.role : "";
+        if (target.role === "Admin") throw new HttpError(400, "Peran akun Admin tidak dapat diubah.");
+        if (role === "Admin" || !(await roleExists(role))) throw new HttpError(400, "Pilih peran selain Admin.");
+        if (role !== target.role) {
+          await supabaseRequest(restQuery("profiles", { id: `eq.${target.id}` }), { method: "PATCH", body: { role }, prefer: "return=minimal" });
+          changes.push("peran");
+        }
+      }
+      if (body.password !== undefined) {
+        const password = typeof body.password === "string" ? body.password : "";
+        if (target.role === "Admin" && !isSelf) throw new HttpError(403, "Password akun Admin lain tidak dapat direset.");
+        if (password.length < 12 || password.length > 72) throw new HttpError(400, "Password harus 12-72 karakter.");
+        await supabaseRequest(`/auth/v1/admin/users/${target.id}`, { method: "PUT", body: { password } });
+        changes.push("password");
+      }
+      if (!changes.length && body.role === undefined && body.password === undefined) throw new HttpError(400, "Tidak ada perubahan yang dikirim.");
+      return json(request, 200, { username: target.username, changed: changes });
+    }
+
+    if (method === "DELETE") {
+      if (isSelf || target.role === "Admin") throw new HttpError(400, "Akun Admin tidak dapat dihapus.");
+      await supabaseRequest(`/auth/v1/admin/users/${target.id}`, { method: "DELETE" });
+      return json(request, 200, { deleted: target.username });
+    }
+  }
+
   if (method === "GET" && path === "/admin/reports") return await listReports(request, url, profile);
 
   const reportRoute = path.match(/^\/admin\/reports\/([0-9a-f-]{36})(?:\/(assignment))?$/iu);
@@ -698,7 +816,7 @@ async function route(request: Request, url: URL, path: string) {
       if (profile.role !== "Admin") throw new HttpError(403, "Hanya Admin yang dapat menugaskan laporan.");
       const body = await readJson(request);
       const role = typeof body.role === "string" ? body.role.trim() : "";
-      if (!USER_ROLES.includes(role) || role === "Admin") throw new HttpError(400, "Pilih peran penerima selain Admin.");
+      if (role === "Admin" || !(await roleExists(role))) throw new HttpError(400, "Pilih peran penerima selain Admin.");
       await supabaseRequest(restQuery("reports", { id: `eq.${reportId}` }), {
         method: "PATCH",
         body: { assigned_role: role, assigned_to: null, updated_at: new Date().toISOString() },

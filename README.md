@@ -92,7 +92,11 @@ Buka `http://localhost:5173`. Tambahkan `http://localhost:5173` ke `ALLOWED_ORIG
 
 ## Peran
 
-Admin dapat melihat seluruh laporan dan menugaskannya kepada akun aktif dengan peran `PKKM`, `PKM`, `ASUS`, `Akademik`, atau unit Kemahasiswaan. Petugas selain Admin hanya melihat laporan yang ditugaskan kepadanya.
+Admin dapat melihat seluruh laporan dan menyerahkannya ke sebuah peran; semua akun berperan itu langsung melihatnya. Petugas selain Admin hanya melihat laporan yang diserahkan ke perannya.
+
+Lewat **Kelola Akun** Admin dapat:
+- menambah, mengganti nama, dan menghapus peran (daftar peran ada di tabel `roles`, migrasi `004_dynamic_roles.sql`). Mengganti nama peran ikut mengubah akun dan laporan yang memakainya; peran yang masih dipakai tidak bisa dihapus. Peran `Admin` terkunci;
+- membuat akun, mengubah peran akun, mereset password, dan menghapus akun petugas. Riwayat tindak lanjut tetap tersimpan setelah akun dihapus. Akun Admin tidak dapat dihapus atau diubah perannya.
 
 ## Batas pemrosesan AI
 
