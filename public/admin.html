@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/styles.css?v=8" />
-    <link rel="stylesheet" href="css/admin.css?v=8" />
-    <script src="js/config.js?v=8"></script>
-    <script src="js/admin.js?v=8" defer></script>
+    <link rel="stylesheet" href="css/styles.css?v=9" />
+    <link rel="stylesheet" href="css/admin.css?v=9" />
+    <script src="js/config.js?v=9"></script>
+    <script src="js/admin.js?v=9" defer></script>
   </head>
   <body class="admin-page">
     <div class="topline">
@@ -84,6 +84,25 @@
           <span class="stat-mark" aria-hidden="true">04</span>
         </article>
       </section>
+
+      <details class="insights" id="insights" open>
+        <summary><span class="panel-accent"></span><h2>Analitik Laporan</h2><span class="insights-total" id="insights-total"></span></summary>
+        <div class="insights-grid">
+          <article class="insight-card"><h3>Kategori terbanyak</h3><div id="insight-categories"></div></article>
+          <article class="insight-card"><h3>Lokasi kampus</h3><div id="insight-campuses"></div></article>
+          <article class="insight-card insight-wide">
+            <h3>Progres per peran</h3>
+            <p class="insight-legend"><span class="dot dot-masuk"></span>Masuk <span class="dot dot-diproses"></span>Diproses <span class="dot dot-selesai"></span>Selesai</p>
+            <div id="insight-roles"></div>
+          </article>
+          <article class="insight-card insight-wide">
+            <h3>Fakultas</h3>
+            <p class="insight-legend"><span class="dot dot-reporter"></span>Pelapor <span class="dot dot-reported"></span>Terlapor</p>
+            <div id="insight-faculties"></div>
+          </article>
+          <article class="insight-card insight-wide"><h3>Laporan per bulan (6 bulan terakhir)</h3><div id="insight-months"></div></article>
+        </div>
+      </details>
 
       <section class="report-panel" aria-labelledby="reports-title">
         <div class="panel-heading">

@@ -173,6 +173,81 @@ function renderReports() {
   document.querySelector("#last-updated").textContent = `Diperbarui ${new Intl.DateTimeFormat("id-ID", { hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
 }
 
+// Baris batang: segments berisi {value, className}; panjang batang relatif terhadap max.
+function barList(container, rows, max) {
+  if (!rows.length) {
+    const empty = document.createElement("p");
+    empty.className = "insight-empty";
+    empty.textContent = "Belum ada data.";
+    container.replaceChildren(empty);
+    return;
+  }
+  container.replaceChildren(...rows.map((row) => {
+    const line = document.createElement("div");
+    line.className = "bar-row";
+    const name = document.createElement("span");
+    name.className = "bar-name";
+    name.textContent = row.name;
+    name.title = row.name;
+    const track = document.createElement("div");
+    track.className = "bar-track";
+    row.segments.forEach((segment) => {
+      if (!segment.value) return;
+      const part = document.createElement("span");
+      part.className = `bar-seg ${segment.className}`;
+      part.style.width = `${(segment.value / max) * 100}%`;
+      part.title = `${segment.label || ""} ${segment.value}`.trim();
+      track.append(part);
+    });
+    const value = document.createElement("span");
+    value.className = "bar-value";
+    value.textContent = row.total;
+    line.append(name, track, value);
+    return line;
+  }));
+}
+
+const monthLabel = (month) => {
+  const [year, number] = month.split("-");
+  return new Intl.DateTimeFormat("id-ID", { month: "short", year: "numeric" }).format(new Date(Number(year), Number(number) - 1, 1));
+};
+
+async function loadInsights() {
+  const data = await apiFetch("/admin/stats");
+  document.querySelector("#insights-total").textContent = `${data.total} laporan`;
+  const single = (rows, className) => rows.map((row) => ({ name: row.name, total: row.count, segments: [{ value: row.count, className }] }));
+  const maxOf = (rows) => Math.max(1, ...rows.map((row) => row.total));
+
+  const categories = single(data.categories, "bar-fill");
+  barList(document.querySelector("#insight-categories"), categories, maxOf(categories));
+  const campuses = single(data.campuses, "bar-fill");
+  barList(document.querySelector("#insight-campuses"), campuses, maxOf(campuses));
+
+  const roles = data.roles.map((role) => ({
+    name: role.name,
+    total: role.total,
+    segments: [
+      { value: role.masuk, className: "seg-masuk", label: "Masuk" },
+      { value: role.diproses, className: "seg-diproses", label: "Diproses" },
+      { value: role.selesai, className: "seg-selesai", label: "Selesai" },
+    ],
+  }));
+  barList(document.querySelector("#insight-roles"), roles, maxOf(roles));
+
+  const faculties = data.faculties.map((faculty) => ({
+    name: faculty.name,
+    total: `${faculty.reporter} / ${faculty.reported}`,
+    segments: [
+      { value: faculty.reporter, className: "seg-reporter", label: "Pelapor" },
+      { value: faculty.reported, className: "seg-reported", label: "Terlapor" },
+    ],
+  }));
+  barList(document.querySelector("#insight-faculties"), faculties, Math.max(1, ...data.faculties.map((faculty) => faculty.reporter + faculty.reported)));
+
+  const months = data.months.map((item) => ({ name: monthLabel(item.month), total: item.count, segments: [{ value: item.count, className: "bar-fill" }] }));
+  barList(document.querySelector("#insight-months"), months, maxOf(months));
+}
+
 async function loadReports() {
   const params = new URLSearchParams();
   params.set("page", String(currentPage));
@@ -193,6 +268,7 @@ async function loadReports() {
   document.querySelector("#previous-page").disabled = currentPage <= 1;
   document.querySelector("#next-page").disabled = currentPage >= totalPages;
   renderReports();
+  loadInsights().catch((error) => showToast(error.message, true));
 }
 
 function addDetailField(container, label, value) {
@@ -634,7 +710,8 @@ async function openReport(id) {
     addDetailField(grid, "Kategori", report.category);
     addDetailField(grid, "Tanggal kejadian", formatDate(report.incident_date));
     addDetailField(grid, "Perkiraan waktu", report.incident_time);
-    addDetailField(grid, "Lokasi", report.incident_location);
+    addDetailField(grid, "Lokasi kampus", report.incident_campus);
+    addDetailField(grid, "Detail lokasi", report.incident_location);
     addDetailField(grid, "Status penugasan", report.assigned_role ? `${report.assigned_to ? "Petugas ditetapkan" : "Peran"} · ${report.assigned_role}` : "Menunggu pratinjau Admin");
     content.append(grid);
 

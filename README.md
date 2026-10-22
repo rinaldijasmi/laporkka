@@ -74,6 +74,10 @@ Workflow `.github/workflows/cloudflare-pages.yml` men-deploy `public/` ke Cloudf
 
 Domain kustom: `https://lapor.kkatelkomuniversity.com` (CNAME `lapor` → `laporkka.pages.dev`, proxied). Tambahkan origin-nya ke `ALLOWED_ORIGINS`.
 
+## Data fakultas, prodi, dan kampus
+
+Dropdown di formulir diambil dari `public/js/campus-data.js` (sumber: smb.telkomuniversity.ac.id). Setelah mengubahnya jalankan `npm run build:campus` untuk memperbarui salinan backend `supabase/functions/_shared/campus-data.ts`, lalu deploy ulang fungsi. Server menolak fakultas, prodi, atau kampus yang tidak ada di daftar. Dashboard Admin menampilkan analitik kategori, kampus, progres per peran, fakultas, dan tren bulanan (`GET /admin/stats`, mengikuti cakupan peran).
+
 ## Anti-spam (Turnstile + batas IP)
 
 - Batas longgar 60 laporan/jam per IP (di-hash, disimpan di tabel `rate_limits`, migrasi `003_rate_limits.sql`) agar satu kelas di WiFi yang sama tetap aman.

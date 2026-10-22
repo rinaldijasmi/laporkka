@@ -6,6 +6,7 @@
   "scripts": {
     "create-user": "node scripts/create-user.js",
     "build:articles": "node scripts/build-articles.js",
+    "build:campus": "node scripts/build-campus-data.js",
     "serve:public": "node scripts/serve-public.js",
     "deploy:cloudflare": "npx wrangler pages deploy public --project-name laporkka --branch main",
     "test": "node --test"

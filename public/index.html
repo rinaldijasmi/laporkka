@@ -15,9 +15,10 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=8" />
-    <script src="js/config.js?v=8"></script>
-    <script src="js/app.js?v=8" defer></script>
+    <link rel="stylesheet" href="css/styles.css?v=9" />
+    <script src="js/config.js?v=9"></script>
+    <script src="js/campus-data.js?v=9"></script>
+    <script src="js/app.js?v=9" defer></script>
   </head>
   <body>
     <div class="topline">
@@ -128,12 +129,12 @@
                   <input name="reporterPhone" type="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" />
                 </label>
                 <label class="field">
-                  <span>Program studi <span class="required">*</span></span>
-                  <input name="reporterStudyProgram" placeholder="Nama program studi" required />
+                  <span>Fakultas <span class="required">*</span></span>
+                  <select name="reporterFaculty" data-faculty-select data-program-select="reporterStudyProgram" required></select>
                 </label>
                 <label class="field">
-                  <span>Fakultas <span class="required">*</span></span>
-                  <input name="reporterFaculty" placeholder="Nama fakultas" required />
+                  <span>Program studi <span class="required">*</span></span>
+                  <select name="reporterStudyProgram" required></select>
                 </label>
               </div>
             </fieldset>
@@ -151,12 +152,12 @@
                   <input name="reportedNim" inputmode="numeric" placeholder="Nomor Induk Mahasiswa" required />
                 </label>
                 <label class="field">
-                  <span>Program studi terlapor</span>
-                  <input name="reportedStudyProgram" placeholder="Nama program studi" />
+                  <span>Fakultas terlapor</span>
+                  <select name="reportedFaculty" data-faculty-select data-program-select="reportedStudyProgram" data-optional></select>
                 </label>
                 <label class="field">
-                  <span>Fakultas terlapor</span>
-                  <input name="reportedFaculty" placeholder="Nama fakultas" />
+                  <span>Program studi terlapor</span>
+                  <select name="reportedStudyProgram" data-optional></select>
                 </label>
               </div>
             </fieldset>
@@ -186,9 +187,13 @@
                   <span>Perkiraan waktu kejadian</span>
                   <input name="incidentTime" type="time" />
                 </label>
-                <label class="field field-full">
-                  <span>Lokasi kejadian</span>
-                  <input name="incidentLocation" placeholder="Contoh: Gedung, ruang, area kampus, atau platform digital" />
+                <label class="field">
+                  <span>Lokasi kampus <span class="required">*</span></span>
+                  <select name="incidentCampus" data-campus-select required></select>
+                </label>
+                <label class="field">
+                  <span>Detail lokasi</span>
+                  <input name="incidentLocation" placeholder="Contoh: gedung, ruang, atau nama platform digital" />
                 </label>
                 <label class="field field-full">
                   <span>Uraian / kronologi kejadian <span class="required">*</span></span>

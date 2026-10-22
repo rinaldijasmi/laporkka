@@ -1,3 +1,4 @@
+import { CAMPUS_DATA } from "../_shared/campus-data.ts";
 import { createHash, randomBytes } from "node:crypto";
 import articlesData from "../_shared/articles.json" with { type: "json" };
 import { analyzeReport } from "../_shared/ai-analysis.ts";
@@ -189,6 +190,18 @@ async function authenticate(request: Request) {
   return { user, profile };
 }
 
+const OTHER_OPTION = CAMPUS_DATA.other;
+
+function invalidAcademicUnit(faculty: string, program: string, who: string) {
+  if (!faculty && !program) return null;
+  const known = CAMPUS_DATA.faculties.find((item) => item.name === faculty);
+  if (!known && faculty !== OTHER_OPTION) return `Fakultas ${who} tidak valid. Pilih dari daftar.`;
+  if (program && program !== OTHER_OPTION && !(known?.programs as readonly string[] | undefined)?.includes(program)) {
+    return `Program studi ${who} tidak sesuai dengan fakultasnya.`;
+  }
+  return null;
+}
+
 function validateReport(body: Record<string, string>) {
   const required: [string, string][] = [
     ["reporterName", "Nama pelapor"],
@@ -199,6 +212,7 @@ function validateReport(body: Record<string, string>) {
     ["reportedName", "Nama terlapor"],
     ["reportedNim", "NIM terlapor"],
     ["category", "Kategori"],
+    ["incidentCampus", "Lokasi kampus"],
     ["incidentDate", "Tanggal kejadian"],
     ["description", "Kronologi kejadian"],
   ];
@@ -206,6 +220,10 @@ function validateReport(body: Record<string, string>) {
     if (typeof body[key] !== "string" || !body[key].trim()) return `${label} wajib diisi.`;
   }
   if (!categories.includes(body.category)) return "Kategori laporan tidak valid.";
+  if (!(CAMPUS_DATA.campuses as readonly string[]).includes(body.incidentCampus.trim())) return "Lokasi kampus tidak valid.";
+  const unitError = invalidAcademicUnit(body.reporterFaculty.trim(), body.reporterStudyProgram.trim(), "pelapor") ||
+    invalidAcademicUnit((body.reportedFaculty || "").trim(), (body.reportedStudyProgram || "").trim(), "terlapor");
+  if (unitError) return unitError;
   const dateParts = body.incidentDate.split("-").map(Number);
   const date = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2]));
   if (
@@ -305,6 +323,7 @@ function reportView(row: Record<string, any>) {
     category: row.category,
     incident_date: row.incident_date,
     incident_time: row.incident_time,
+    incident_campus: row.incident_campus,
     incident_location: row.incident_location,
     description: row.description,
     status: row.status,
@@ -439,6 +458,67 @@ async function verifyTurnstile(request: Request, token: string) {
   }
 }
 
+async function reportStats(request: Request, profile: Record<string, any>) {
+  const roleScope = profile.role === "Admin"
+    ? ""
+    : `(assigned_to.eq.${profile.id},and(assigned_to.is.null,assigned_role.eq."${profile.role}"))`;
+  const rows: Record<string, any>[] = [];
+  for (let from = 0; from < 20000; from += 1000) {
+    const { data } = await supabaseRequest(restQuery("reports", {
+      select: "category,status,assigned_role,reporter_faculty,reported_faculty,incident_campus,created_at",
+      order: "created_at.asc",
+      ...(roleScope ? { or: roleScope } : {}),
+    }), { headers: { Range: `${from}-${from + 999}`, "Range-Unit": "items" } });
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+
+  const tally = (pick: (row: Record<string, any>) => string | null | undefined) => {
+    const map = new Map<string, number>();
+    for (const row of rows) {
+      const key = pick(row);
+      if (key) map.set(key, (map.get(key) || 0) + 1);
+    }
+    return [...map].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  };
+
+  const roles = new Map<string, { name: string; masuk: number; diproses: number; selesai: number; total: number }>();
+  for (const row of rows) {
+    const name = row.assigned_role || "Belum diserahkan";
+    const entry = roles.get(name) || { name, masuk: 0, diproses: 0, selesai: 0, total: 0 };
+    entry[row.status as "masuk" | "diproses" | "selesai"] += 1;
+    entry.total += 1;
+    roles.set(name, entry);
+  }
+
+  const facultyMap = new Map<string, { name: string; reporter: number; reported: number }>();
+  const bump = (name: string | null, key: "reporter" | "reported") => {
+    if (!name) return;
+    const entry = facultyMap.get(name) || { name, reporter: 0, reported: 0 };
+    entry[key] += 1;
+    facultyMap.set(name, entry);
+  };
+  for (const row of rows) {
+    bump(row.reporter_faculty, "reporter");
+    bump(row.reported_faculty, "reported");
+  }
+
+  const monthly = new Map<string, number>();
+  for (const row of rows) {
+    const key = new Date(new Date(row.created_at).getTime() + 7 * 3_600_000).toISOString().slice(0, 7);
+    monthly.set(key, (monthly.get(key) || 0) + 1);
+  }
+
+  return json(request, 200, {
+    total: rows.length,
+    categories: tally((row) => row.category),
+    campuses: tally((row) => row.incident_campus || "Belum diisi"),
+    roles: [...roles.values()].sort((a, b) => b.total - a.total),
+    faculties: [...facultyMap.values()].sort((a, b) => b.reporter + b.reported - (a.reporter + a.reported)),
+    months: [...monthly].map(([month, count]) => ({ month, count })).slice(-6),
+  });
+}
+
 async function submitReport(request: Request) {
   if (!(await checkReportIpLimit(request))) {
     throw new HttpError(429, "Terlalu banyak laporan dari jaringan ini dalam satu jam. Coba kembali nanti.");
@@ -495,6 +575,7 @@ async function submitReport(request: Request) {
     category: fields.category,
     incident_date: fields.incidentDate,
     incident_time: fields.incidentTime || null,
+    incident_campus: fields.incidentCampus.trim(),
     incident_location: fields.incidentLocation?.trim() || null,
     description: fields.description.trim(),
   };
@@ -799,6 +880,8 @@ async function route(request: Request, url: URL, path: string) {
       return json(request, 200, { deleted: target.username });
     }
   }
+
+  if (method === "GET" && path === "/admin/stats") return await reportStats(request, profile);
 
   if (method === "GET" && path === "/admin/reports") return await listReports(request, url, profile);
 

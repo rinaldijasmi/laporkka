@@ -210,6 +210,37 @@ trackingForm.addEventListener("submit", (event) => {
   });
 });
 
+const campusData = window.LAPORKKA_CAMPUS;
+
+function fillSelect(select, placeholder, values) {
+  select.replaceChildren(new Option(placeholder, ""));
+  values.forEach((value) => select.add(new Option(value, value)));
+}
+
+form.querySelectorAll("[data-campus-select]").forEach((select) => {
+  fillSelect(select, "Pilih lokasi kampus", campusData.campuses);
+});
+
+// Fakultas mengisi pilihan program studi; "Lainnya" tetap tersedia bila program tidak ada di daftar.
+form.querySelectorAll("[data-faculty-select]").forEach((facultySelect) => {
+  const programSelect = form.elements[facultySelect.dataset.programSelect];
+  const optional = facultySelect.hasAttribute("data-optional");
+  fillSelect(facultySelect, optional ? "Pilih fakultas (jika diketahui)" : "Pilih fakultas", [...campusData.faculties.map((faculty) => faculty.name), campusData.other]);
+  const resetPrograms = () => {
+    const faculty = campusData.faculties.find((item) => item.name === facultySelect.value);
+    if (!faculty && facultySelect.value !== campusData.other) {
+      fillSelect(programSelect, "Pilih fakultas terlebih dahulu", []);
+      programSelect.disabled = true;
+      return;
+    }
+    fillSelect(programSelect, optional ? "Pilih program studi (jika diketahui)" : "Pilih program studi", [...(faculty ? faculty.programs : []), campusData.other]);
+    programSelect.disabled = false;
+  };
+  facultySelect.addEventListener("change", resetPrograms);
+  form.addEventListener("reset", () => setTimeout(resetPrograms));
+  resetPrograms();
+});
+
 let turnstileWidgetId = null;
 const turnstileSiteKey = window.LAPORKKA_TURNSTILE_SITE_KEY;
 if (turnstileSiteKey) {
