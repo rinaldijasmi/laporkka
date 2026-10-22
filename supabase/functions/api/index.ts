@@ -396,7 +396,7 @@ async function verifyTurnstile(request: Request, token: string) {
   const body = new URLSearchParams({ secret, response: token });
   const ip = clientIp(request);
   if (ip !== "unknown") body.set("remoteip", ip);
-  let result: { success?: boolean } = {};
+  let result: { success?: boolean; "error-codes"?: string[] } = {};
   try {
     const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
       method: "POST",
@@ -407,7 +407,10 @@ async function verifyTurnstile(request: Request, token: string) {
   } catch {
     throw new HttpError(503, "Verifikasi keamanan sementara tidak tersedia. Coba lagi sebentar.");
   }
-  if (!result.success) throw new HttpError(400, "Verifikasi keamanan gagal atau kedaluwarsa. Silakan coba lagi.");
+  if (!result.success) {
+    const codes = (result["error-codes"] || []).join(", ");
+    throw new HttpError(400, `Verifikasi keamanan gagal atau kedaluwarsa. Silakan coba lagi.${codes ? ` (${codes})` : ""}`);
+  }
 }
 
 async function submitReport(request: Request) {
