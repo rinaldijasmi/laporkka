@@ -2,7 +2,7 @@
 
 Formulir laporan mahasiswa dan dashboard petugas KKA.
 
-- **Frontend** (`public/`): HTML/CSS/JS statis di GitHub Pages.
+- **Frontend** (`public/`): HTML/CSS/JS statis di Cloudflare Pages.
 - **Backend** (`supabase/functions/api`): satu Supabase Edge Function untuk laporan, pelacakan, login petugas, penugasan, dan analisis AI.
 - **Data**: Supabase Auth, Postgres, dan private Storage. Analisis pasal memakai OpenAI dengan teks laporan yang sudah disamarkan.
 
@@ -18,7 +18,7 @@ supabase/
   config.toml
 scripts/                   create-user.js, build-articles.js, serve-public.js
 test/                      tes unit
-.github/workflows/         deploy GitHub Pages
+.github/workflows/         deploy Cloudflare Pages
 ```
 
 ## Menyiapkan backend
@@ -48,13 +48,9 @@ test/                      tes unit
 
 Jika PDF Kode Etik diganti, jalankan `npm run build:articles` lalu deploy ulang fungsi.
 
-## Deploy frontend ke GitHub Pages
+## Konfigurasi frontend
 
-1. Pastikan `public/js/config.js` berisi `https://<PROJECT_REF>.supabase.co/functions/v1/api`.
-2. Di repo GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Setiap push ke `main` yang mengubah `public/` dipublikasikan otomatis oleh [`pages.yml`](./.github/workflows/pages.yml).
-
-`ALLOWED_ORIGINS` harus berisi origin situs Pages (tanpa path, mis. `https://USERNAME.github.io`).
+`public/js/config.js` harus berisi `https://<PROJECT_REF>.supabase.co/functions/v1/api`. `ALLOWED_ORIGINS` harus berisi origin situs (tanpa path, mis. `https://lapor.kkatelkomuniversity.com`).
 
 ## Deploy frontend ke Cloudflare Pages
 
