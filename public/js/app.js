@@ -142,8 +142,8 @@ form.addEventListener("reset", () => {
 
 form.elements.incidentDate.max = new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
 
-document.querySelector("#open-policy").addEventListener("click", () => {
-  document.querySelector("#policy-dialog").showModal();
+document.querySelector("#open-violations").addEventListener("click", () => {
+  document.querySelector("#violations-dialog").showModal();
 });
 
 document.querySelector("#open-tracking").addEventListener("click", () => {

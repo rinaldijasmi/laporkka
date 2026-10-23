@@ -250,11 +250,17 @@ main { overflow: hidden; }
 .dialog-header h2 { margin: 3px 0 0; font: 800 20px/1.35 "Manrope",sans-serif; letter-spacing: -.035em; }
 .dialog-close { width: 31px; height: 31px; flex: 0 0 auto; display: grid; place-items: center; color: #798491; border: 1px solid #e3e7eb; border-radius: 8px; background: white; cursor: pointer; font-size: 20px; line-height: 1; }
 .dialog-close:hover { color: var(--red); background: #fff6f5; }
-.policy-description, .dialog-intro { color: var(--muted); font-size: 11px; line-height: 1.75; }
-.policy-description { margin: 13px 0 10px; }
-.policy-pdf { width: 100%; height: min(58vh, 580px); display: block; border: 1px solid var(--line); border-radius: 9px; background: #f3f5f7; }
-.policy-open-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--red); font-size: 10px; font-weight: 700; }
-.policy-open-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.dialog-intro, .violation-intro { color: var(--muted); font-size: 11px; line-height: 1.75; }
+.violation-intro { margin: 13px 0 14px; }
+.violation-dialog { width: min(680px, calc(100% - 30px)); }
+.violation-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.violation-card { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid #e9edf0; border-radius: 10px; background: #fbfcfd; }
+.violation-number { display: grid; place-items: center; flex: 0 0 25px; width: 25px; height: 25px; border-radius: 8px; background: #f8e9e8; color: var(--red); font-size: 10px; font-weight: 800; }
+.violation-card h3 { margin: 1px 0 5px; color: var(--ink); font-size: 11px; }
+.violation-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
+.violation-card small { display: block; margin-top: 6px; color: #89939f; font-size: 9px; }
+.violation-note { margin: 13px 0 0; padding: 10px 12px; border-left: 3px solid #d5a84f; border-radius: 4px; background: #fffaf0; color: #685a3e; font-size: 10px; line-height: 1.7; }
+.violation-note strong { color: #44391f; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 19px; }
 .dialog-actions .button { min-height: 39px; font-size: 10px; }
 .dialog-intro { margin: 15px 0; }
@@ -340,6 +346,7 @@ main { overflow: hidden; }
   .site-footer > span:nth-child(2) { grid-column: 1 / -1; grid-row: 2; font-size: 9px; }
   .footer-copy { grid-column: 1 / -1; grid-row: 3; margin: 5px 0 0; font-size: 9px; }
   .feature-dialog { padding: 19px; }
+  .violation-list { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }

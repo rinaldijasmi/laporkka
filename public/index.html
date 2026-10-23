@@ -15,10 +15,10 @@
       href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=9" />
+    <link rel="stylesheet" href="css/styles.css?v=11" />
     <script src="js/config.js?v=9"></script>
     <script src="js/campus-data.js?v=9"></script>
-    <script src="js/app.js?v=9" defer></script>
+    <script src="js/app.js?v=11" defer></script>
   </head>
   <body>
     <div class="topline">
@@ -42,7 +42,7 @@
       </a>
       <nav class="header-nav" aria-label="Navigasi utama">
         <a class="nav-current" href="#form-laporan"><span class="nav-icon">↗</span> Buat Laporan</a>
-        <button class="nav-secondary nav-action" id="open-policy" type="button">Kode Etik Mahasiswa</button>
+        <button class="nav-secondary nav-action" id="open-violations" type="button">Jenis Pelanggaran</button>
         <button class="nav-secondary nav-action" id="open-tracking" type="button">Lacak Laporan</button>
         <a class="nav-secondary nav-admin-link" href="admin.html">Portal Petugas</a>
       </nav>
@@ -266,23 +266,46 @@
       <span class="footer-copy">© 2026 LaporKKA · Laporan ditangani secara bertanggung jawab</span>
     </footer>
 
-    <dialog class="feature-dialog" id="policy-dialog" aria-labelledby="policy-title">
+    <dialog class="feature-dialog violation-dialog" id="violations-dialog" aria-labelledby="violations-title">
       <div class="dialog-header">
         <div>
-          <span class="form-kicker">PANDUAN MAHASISWA</span>
-          <h2 id="policy-title">Kode Etik Mahasiswa</h2>
+          <span class="form-kicker">PANDUAN PELAPORAN</span>
+          <h2 id="violations-title">Jenis Pelanggaran</h2>
         </div>
         <button class="dialog-close" type="button" data-close-dialog aria-label="Tutup">×</button>
       </div>
-      <p class="policy-description">Baca dokumen resmi Kode Etik Mahasiswa Universitas edisi 2026.</p>
-      <iframe
-        class="policy-pdf"
-        src="assets/kode-etik-mahasiswa-2026.pdf#view=FitH"
-        title="Dokumen Kode Etik Mahasiswa 2026"
-      ></iframe>
-      <a class="policy-open-link" href="assets/kode-etik-mahasiswa-2026.pdf" target="_blank" rel="noopener noreferrer">
-        Buka dokumen di tab baru <span aria-hidden="true">↗</span>
-      </a>
+      <p class="violation-intro">Ringkasan berbantuan AI berdasarkan Kode Etik Mahasiswa Telkom University. Anda dapat melaporkan dugaan pelanggaran, termasuk contoh berikut:</p>
+      <div class="violation-list">
+        <article class="violation-card">
+          <span class="violation-number">01</span>
+          <div><h3>Akademik</h3><p>Menyontek, plagiarisme, perjokian, pemalsuan dokumen atau nilai, penggunaan AI tanpa izin, serta tindakan yang mengganggu perkuliahan.</p><small>Rujukan: Pasal 15 dan 19</small></div>
+        </article>
+        <article class="violation-card">
+          <span class="violation-number">02</span>
+          <div><h3>Etika dan perilaku sosial</h3><p>Perilaku tidak sopan, diskriminasi, penghinaan, mengadu domba, atau tindakan lain yang merugikan dan merendahkan orang lain.</p><small>Rujukan: Pasal 10–14 dan 18</small></div>
+        </article>
+        <article class="violation-card">
+          <span class="violation-number">03</span>
+          <div><h3>Kekerasan, perundungan, dan pelecehan</h3><p>Kekerasan fisik atau verbal, ancaman, intimidasi, perundungan, perpeloncoan, pelecehan, dan tindakan asusila.</p><small>Rujukan: Pasal 11, 13, 16, dan 18</small></div>
+        </article>
+        <article class="violation-card">
+          <span class="violation-number">04</span>
+          <div><h3>Digital dan siber</h3><p>Perundungan siber, pelecehan atau penghinaan daring, penguntitan, penyebaran data pribadi tanpa hak, hoaks, dan ujaran kebencian.</p><small>Rujukan: Pasal 14 dan 18</small></div>
+        </article>
+        <article class="violation-card">
+          <span class="violation-number">05</span>
+          <div><h3>Organisasi dan kegiatan mahasiswa</h3><p>Perpeloncoan atau kekerasan saat kaderisasi, intimidasi dalam kegiatan, kegiatan yang melanggar ketentuan, atau penyalahgunaan fasilitas organisasi.</p><small>Rujukan: Pasal 14 dan 16</small></div>
+        </article>
+        <article class="violation-card">
+          <span class="violation-number">06</span>
+          <div><h3>Fasilitas, lingkungan, dan keamanan</h3><p>Perusakan atau penyalahgunaan sarana kampus, tindakan yang membahayakan keselamatan, serta gangguan terhadap kebersihan, ketertiban, atau keamanan.</p><small>Rujukan: Pasal 14–16</small></div>
+        </article>
+        <article class="violation-card">
+          <span class="violation-number">07</span>
+          <div><h3>Komersial, perjudian, dan politik</h3><p>Dugaan aktivitas komersial, perjudian, atau aktivitas politik yang melanggar ketentuan kampus maupun hukum yang berlaku.</p><small>Setiap laporan ditelaah sesuai konteks dan aturan yang berlaku.</small></div>
+        </article>
+      </div>
+      <p class="violation-note"><strong>Catatan:</strong> Daftar ini merupakan panduan, bukan penetapan bahwa seseorang bersalah. Sampaikan fakta yang Anda ketahui; laporan akan ditelaah oleh petugas berwenang. Untuk keadaan darurat atau risiko keselamatan langsung, hubungi pihak keamanan atau layanan darurat.</p>
       <div class="dialog-actions">
         <button class="button button-quiet" type="button" data-close-dialog>Tutup</button>
       </div>
