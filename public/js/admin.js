@@ -271,6 +271,23 @@ async function loadReports() {
   loadInsights().catch((error) => showToast(error.message, true));
 }
 
+function renderRegulationGuidance(category) {
+  if (!/perundungan|kekerasan/i.test(category || "")) return null;
+  const box = document.createElement("div");
+  box.className = "detail-guidance";
+  const title = document.createElement("strong");
+  title.textContent = "Saran rujukan peraturan";
+  const text = document.createElement("p");
+  text.textContent = "Laporan kategori ini dapat ditelaah dengan merujuk pada PU Rektor tentang Pencegahan dan Penanganan Kekerasan (PU.004/KMH01/KKA/2026): Pasal 8 (fisik), 9 (psikis), 10 (perundungan), 11 (seksual), 12 (diskriminasi/intoleransi), dan 13 (kebijakan yang mengandung kekerasan).";
+  const link = document.createElement("a");
+  link.href = "assets/peraturan-universitas-pencegahan-penanganan-kekerasan-2026.pdf";
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = "Buka PU Rektor (PDF)";
+  box.append(title, text, link);
+  return box;
+}
+
 function addDetailField(container, label, value) {
   const item = document.createElement("div");
   item.className = "detail-field";
@@ -714,6 +731,8 @@ async function openReport(id) {
     addDetailField(grid, "Detail lokasi", report.incident_location);
     addDetailField(grid, "Status penugasan", report.assigned_role ? `${report.assigned_to ? "Petugas ditetapkan" : "Peran"} · ${report.assigned_role}` : "Menunggu pratinjau Admin");
     content.append(grid);
+    const guidance = renderRegulationGuidance(report.category);
+    if (guidance) content.append(guidance);
 
     const description = document.createElement("div");
     description.className = "detail-description";
