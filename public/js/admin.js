@@ -135,7 +135,7 @@ function renderReports() {
     const person = document.createElement("strong");
     person.textContent = report.reported_name;
     const nim = document.createElement("small");
-    nim.textContent = `NIM ${report.reported_nim}`;
+    nim.textContent = `ID ${report.reported_nim}`;
     personCell.append(person, nim);
     row.append(createCell("", personCell));
 
@@ -149,7 +149,7 @@ function renderReports() {
     const reporter = document.createElement("strong");
     reporter.textContent = report.reporter_name;
     const reporterNim = document.createElement("small");
-    reporterNim.textContent = `NIM ${report.reporter_nim}`;
+    reporterNim.textContent = `ID ${report.reporter_nim}`;
     reporterCell.append(reporter, reporterNim);
     row.append(createCell("", reporterCell));
 
@@ -715,13 +715,13 @@ async function openReport(id) {
     const grid = document.createElement("div");
     grid.className = "detail-grid";
     addDetailField(grid, "Nama pelapor", report.reporter_name);
-    addDetailField(grid, "NIM pelapor", report.reporter_nim);
+    addDetailField(grid, "NIM/NIP/ID pelapor", report.reporter_nim);
     addDetailField(grid, "Email pelapor", report.reporter_email);
     addDetailField(grid, "Telepon pelapor", report.reporter_phone);
     addDetailField(grid, "Program studi pelapor", report.reporter_study_program);
     addDetailField(grid, "Fakultas pelapor", report.reporter_faculty);
     addDetailField(grid, "Nama terlapor", report.reported_name);
-    addDetailField(grid, "NIM terlapor", report.reported_nim);
+    addDetailField(grid, "NIM/NIP/ID terlapor", report.reported_nim);
     addDetailField(grid, "Program studi terlapor", report.reported_study_program);
     addDetailField(grid, "Fakultas terlapor", report.reported_faculty);
     addDetailField(grid, "Kategori", report.category);

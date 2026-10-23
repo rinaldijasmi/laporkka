@@ -17,7 +17,7 @@
     />
     <link rel="stylesheet" href="css/styles.css?v=15" />
     <script src="js/config.js?v=9"></script>
-    <script src="js/campus-data.js?v=9"></script>
+    <script src="js/campus-data.js?v=10"></script>
     <script src="js/app.js?v=11" defer></script>
   </head>
   <body>
@@ -117,12 +117,12 @@
                   <input name="reporterName" autocomplete="name" placeholder="Sesuai identitas mahasiswa" required />
                 </label>
                 <label class="field">
-                  <span>Nomor Induk Mahasiswa (NIM) <span class="required">*</span></span>
-                  <input name="reporterNim" inputmode="numeric" autocomplete="off" placeholder="Contoh: 123456789" required />
+                  <span>NIM/NIP/Nomor Identitas <span class="required">*</span></span>
+                  <input name="reporterNim" autocomplete="off" placeholder="NIM, NIP, atau nomor identitas lain" required />
                 </label>
                 <label class="field">
                   <span>Alamat email aktif <span class="required">*</span></span>
-                  <input name="reporterEmail" type="email" autocomplete="email" placeholder="nama@kampus.ac.id" required />
+                  <input name="reporterEmail" type="email" autocomplete="email" placeholder="nama@email.com" required />
                 </label>
                 <label class="field">
                   <span>Nomor telepon / WhatsApp</span>
@@ -148,8 +148,8 @@
                   <input name="reportedName" placeholder="Nama lengkap terlapor" required />
                 </label>
                 <label class="field">
-                  <span>NIM mahasiswa terlapor <span class="required">*</span></span>
-                  <input name="reportedNim" inputmode="numeric" placeholder="Nomor Induk Mahasiswa" required />
+                  <span>NIM/NIP/Nomor Identitas terlapor <span class="required">*</span></span>
+                  <input name="reportedNim" placeholder="NIM, NIP, atau nomor identitas lain" required />
                 </label>
                 <label class="field">
                   <span>Fakultas terlapor</span>

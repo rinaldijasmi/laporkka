@@ -205,12 +205,12 @@ function invalidAcademicUnit(faculty: string, program: string, who: string) {
 function validateReport(body: Record<string, string>) {
   const required: [string, string][] = [
     ["reporterName", "Nama pelapor"],
-    ["reporterNim", "NIM pelapor"],
+    ["reporterNim", "NIM/NIP/Nomor Identitas pelapor"],
     ["reporterEmail", "Email pelapor"],
     ["reporterStudyProgram", "Program studi pelapor"],
     ["reporterFaculty", "Fakultas pelapor"],
     ["reportedName", "Nama terlapor"],
-    ["reportedNim", "NIM terlapor"],
+    ["reportedNim", "NIM/NIP/Nomor Identitas terlapor"],
     ["category", "Kategori"],
     ["incidentCampus", "Lokasi kampus"],
     ["incidentDate", "Tanggal kejadian"],
@@ -242,7 +242,7 @@ function validateReport(body: Record<string, string>) {
   if (body.reporterEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(body.reporterEmail)) {
     return "Alamat email pelapor tidak valid.";
   }
-  if (body.reporterNim.length > 32 || body.reportedNim.length > 32) return "NIM terlalu panjang.";
+  if (body.reporterNim.length > 32 || body.reportedNim.length > 32) return "Nomor identitas terlalu panjang.";
   if (body.reporterName.length > 150 || body.reportedName.length > 150) return "Nama terlalu panjang.";
   if (body.reporterPhone?.length > 32) return "Nomor telepon terlalu panjang.";
   if (body.reporterStudyProgram.length > 150 || body.reporterFaculty.length > 150) return "Program studi atau fakultas terlalu panjang.";

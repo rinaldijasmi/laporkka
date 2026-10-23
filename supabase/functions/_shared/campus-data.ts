@@ -103,6 +103,51 @@ export const CAMPUS_DATA = {
       "programs": [
         "S1 Kedokteran"
       ]
+    },
+    {
+      "name": "Kampus Jakarta (langsung kampus)",
+      "programs": [
+        "S1 Teknik Telekomunikasi",
+        "S1 Teknologi Informasi",
+        "S1 Sistem Informasi",
+        "S1 Desain Komunikasi Visual",
+        "S1 Informatika"
+      ]
+    },
+    {
+      "name": "Kampus Surabaya (langsung kampus)",
+      "programs": [
+        "S1 Informatika",
+        "S1 Digital Business",
+        "S1 Sistem Informasi",
+        "S1 Teknik Industri",
+        "S1 Sains Data",
+        "S1 Teknologi Informasi",
+        "S1 Rekayasa Perangkat Lunak",
+        "S1 Teknik Telekomunikasi",
+        "S1 Teknik Elektro",
+        "S1 Teknik Komputer",
+        "S1 Digital Supply Chain"
+      ]
+    },
+    {
+      "name": "Kampus Purwokerto (langsung kampus)",
+      "programs": [
+        "D3 Teknologi Telekomunikasi",
+        "S1 Teknik Telekomunikasi",
+        "S1 Teknik Elektro",
+        "S1 Teknik Biomedis",
+        "S1 Teknologi Pangan",
+        "S1 Teknik Industri",
+        "S1 Digital Supply Chain",
+        "S1 Sistem Informasi",
+        "S1 Informatika",
+        "S1 Rekayasa Perangkat Lunak",
+        "S1 Sains Data",
+        "S1 Bisnis Digital",
+        "S1 Desain Komunikasi Visual",
+        "S1 Desain Produk & Inovasi"
+      ]
     }
   ]
 } as const;
