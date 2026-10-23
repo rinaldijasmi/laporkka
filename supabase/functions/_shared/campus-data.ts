@@ -105,7 +105,7 @@ export const CAMPUS_DATA = {
       ]
     },
     {
-      "name": "Kampus Jakarta (langsung kampus)",
+      "name": "Kampus Jakarta",
       "programs": [
         "S1 Teknik Telekomunikasi",
         "S1 Teknologi Informasi",
@@ -115,7 +115,7 @@ export const CAMPUS_DATA = {
       ]
     },
     {
-      "name": "Kampus Surabaya (langsung kampus)",
+      "name": "Kampus Surabaya",
       "programs": [
         "S1 Informatika",
         "S1 Digital Business",
@@ -131,7 +131,7 @@ export const CAMPUS_DATA = {
       ]
     },
     {
-      "name": "Kampus Purwokerto (langsung kampus)",
+      "name": "Kampus Purwokerto",
       "programs": [
         "D3 Teknologi Telekomunikasi",
         "S1 Teknik Telekomunikasi",

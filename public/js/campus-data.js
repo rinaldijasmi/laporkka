@@ -104,7 +104,7 @@ window.LAPORKKA_CAMPUS = {
       programs: ["S1 Kedokteran"],
     },
     {
-      name: "Kampus Jakarta (langsung kampus)",
+      name: "Kampus Jakarta",
       programs: [
         "S1 Teknik Telekomunikasi",
         "S1 Teknologi Informasi",
@@ -114,7 +114,7 @@ window.LAPORKKA_CAMPUS = {
       ],
     },
     {
-      name: "Kampus Surabaya (langsung kampus)",
+      name: "Kampus Surabaya",
       programs: [
         "S1 Informatika",
         "S1 Digital Business",
@@ -130,7 +130,7 @@ window.LAPORKKA_CAMPUS = {
       ],
     },
     {
-      name: "Kampus Purwokerto (langsung kampus)",
+      name: "Kampus Purwokerto",
       programs: [
         "D3 Teknologi Telekomunikasi",
         "S1 Teknik Telekomunikasi",
