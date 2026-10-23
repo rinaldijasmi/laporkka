@@ -252,6 +252,9 @@ main { overflow: hidden; }
 .dialog-close:hover { color: var(--red); background: #fff6f5; }
 .dialog-intro, .violation-intro { color: var(--muted); font-size: 11px; line-height: 1.75; }
 .violation-intro { margin: 13px 0 14px; }
+.violation-source { margin: -5px 0 14px; font-size: 10px; line-height: 1.6; }
+.violation-source a { color: var(--red); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.violation-source a:hover { color: #8f2724; }
 .violation-dialog { width: min(680px, calc(100% - 30px)); }
 .violation-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
 .violation-card { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid #e9edf0; border-radius: 10px; background: #fbfcfd; }
@@ -259,6 +262,17 @@ main { overflow: hidden; }
 .violation-card h3 { margin: 1px 0 5px; color: var(--ink); font-size: 11px; }
 .violation-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
 .violation-card small { display: block; margin-top: 6px; color: #89939f; font-size: 9px; }
+.ppkpt-section { margin-top: 22px; padding-top: 20px; border-top: 1px solid #edf0f2; }
+.ppkpt-heading h3 { margin: 5px 0 7px; color: var(--ink); font: 800 15px/1.4 "Manrope",sans-serif; letter-spacing: -.02em; }
+.ppkpt-heading p, .ppkpt-card p, .ppkpt-disclaimer { color: var(--muted); font-size: 10px; line-height: 1.7; }
+.ppkpt-heading p { margin: 0 0 13px; }
+.ppkpt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.ppkpt-card { padding: 11px 12px; border: 1px solid #e9edf0; border-radius: 10px; background: #fbfcfd; }
+.ppkpt-card h4 { margin: 0 0 5px; color: var(--ink); font-size: 10px; }
+.ppkpt-card p { margin: 0; }
+.ppkpt-card small { display: block; margin-top: 6px; color: #89939f; font-size: 9px; }
+.ppkpt-disclaimer { margin: 12px 0; padding: 10px 12px; border-left: 3px solid #d5a84f; border-radius: 4px; background: #fffaf0; color: #685a3e; }
+.ppkpt-document-link { display: inline-flex; align-items: center; justify-content: center; min-height: 39px; padding: 0 15px; font-size: 10px; text-decoration: none; }
 .violation-note { margin: 13px 0 0; padding: 10px 12px; border-left: 3px solid #d5a84f; border-radius: 4px; background: #fffaf0; color: #685a3e; font-size: 10px; line-height: 1.7; }
 .violation-note strong { color: #44391f; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 19px; }
@@ -347,6 +361,7 @@ main { overflow: hidden; }
   .footer-copy { grid-column: 1 / -1; grid-row: 3; margin: 5px 0 0; font-size: 9px; }
   .feature-dialog { padding: 19px; }
   .violation-list { grid-template-columns: 1fr; }
+  .ppkpt-grid { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
