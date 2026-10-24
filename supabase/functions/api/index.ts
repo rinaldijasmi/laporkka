@@ -202,13 +202,28 @@ function invalidAcademicUnit(faculty: string, program: string, who: string) {
   return null;
 }
 
+function otherDetailError(body: Record<string, string>, prefix: string, who: string) {
+  for (const [field, label] of [["Faculty", "Fakultas/Direktorat"], ["StudyProgram", "Program studi"]]) {
+    if (body[`${prefix}${field}`]?.trim() !== OTHER_OPTION) continue;
+    const detail = (body[`${prefix}${field}Other`] || "").trim();
+    if (!detail) return `${label} ${who} wajib diisi saat memilih Lainnya.`;
+    if (detail.length > 100) return `${label} ${who} (Lainnya) terlalu panjang.`;
+  }
+  return null;
+}
+
+function withOtherDetail(body: Record<string, string>, field: string) {
+  const value = body[field]?.trim() || "";
+  return value === OTHER_OPTION ? `Lainnya: ${(body[`${field}Other`] || "").trim()}` : value;
+}
+
 function validateReport(body: Record<string, string>) {
   const required: [string, string][] = [
     ["reporterName", "Nama pelapor"],
     ["reporterNim", "NIM/NIP/Nomor Identitas pelapor"],
     ["reporterEmail", "Email pelapor"],
     ["reporterStudyProgram", "Program studi pelapor"],
-    ["reporterFaculty", "Fakultas pelapor"],
+    ["reporterFaculty", "Fakultas/Direktorat pelapor"],
     ["reportedName", "Nama terlapor"],
     ["reportedNim", "NIM/NIP/Nomor Identitas terlapor"],
     ["category", "Kategori"],
@@ -221,7 +236,8 @@ function validateReport(body: Record<string, string>) {
   }
   if (!categories.includes(body.category)) return "Kategori laporan tidak valid.";
   if (!(CAMPUS_DATA.campuses as readonly string[]).includes(body.incidentCampus.trim())) return "Lokasi kampus tidak valid.";
-  const unitError = invalidAcademicUnit(body.reporterFaculty.trim(), body.reporterStudyProgram.trim(), "pelapor") ||
+  const unitError = otherDetailError(body, "reporter", "pelapor") || otherDetailError(body, "reported", "terlapor") ||
+    invalidAcademicUnit(body.reporterFaculty.trim(), body.reporterStudyProgram.trim(), "pelapor") ||
     invalidAcademicUnit((body.reportedFaculty || "").trim(), (body.reportedStudyProgram || "").trim(), "terlapor");
   if (unitError) return unitError;
   const dateParts = body.incidentDate.split("-").map(Number);
@@ -566,12 +582,12 @@ async function submitReport(request: Request) {
     reporter_nim: fields.reporterNim.trim(),
     reporter_email: fields.reporterEmail.trim(),
     reporter_phone: fields.reporterPhone?.trim() || null,
-    reporter_study_program: fields.reporterStudyProgram.trim(),
-    reporter_faculty: fields.reporterFaculty.trim(),
+    reporter_study_program: withOtherDetail(fields, "reporterStudyProgram"),
+    reporter_faculty: withOtherDetail(fields, "reporterFaculty"),
     reported_name: fields.reportedName.trim(),
     reported_nim: fields.reportedNim.trim(),
-    reported_study_program: fields.reportedStudyProgram?.trim() || null,
-    reported_faculty: fields.reportedFaculty?.trim() || null,
+    reported_study_program: withOtherDetail(fields, "reportedStudyProgram") || null,
+    reported_faculty: withOtherDetail(fields, "reportedFaculty") || null,
     category: fields.category,
     incident_date: fields.incidentDate,
     incident_time: fields.incidentTime || null,

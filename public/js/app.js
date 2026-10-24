@@ -221,22 +221,50 @@ form.querySelectorAll("[data-campus-select]").forEach((select) => {
   fillSelect(select, "Pilih lokasi kampus", campusData.campuses);
 });
 
+function createOtherInput(select, name, placeholder) {
+  const input = document.createElement("input");
+  input.name = name;
+  input.maxLength = 100;
+  input.placeholder = placeholder;
+  input.hidden = true;
+  input.disabled = true;
+  input.className = "other-input";
+  select.insertAdjacentElement("afterend", input);
+  return input;
+}
+
+function toggleOther(input, visible, required) {
+  input.hidden = !visible;
+  input.disabled = !visible;
+  input.required = visible && required;
+  if (!visible) input.value = "";
+}
+
 // Fakultas mengisi pilihan program studi; "Lainnya" tetap tersedia bila program tidak ada di daftar.
 form.querySelectorAll("[data-faculty-select]").forEach((facultySelect) => {
   const programSelect = form.elements[facultySelect.dataset.programSelect];
   const optional = facultySelect.hasAttribute("data-optional");
-  fillSelect(facultySelect, optional ? "Pilih fakultas (jika diketahui)" : "Pilih fakultas", [...campusData.faculties.map((faculty) => faculty.name), campusData.other]);
+  fillSelect(facultySelect, optional ? "Pilih fakultas/direktorat (jika diketahui)" : "Pilih fakultas/direktorat", [...campusData.faculties.map((faculty) => faculty.name), campusData.other]);
+  const facultyOther = createOtherInput(facultySelect, `${facultySelect.name}Other`, "Sebutkan fakultas/direktorat");
+  const programOther = createOtherInput(programSelect, `${programSelect.name}Other`, "Sebutkan program studi");
+  const syncOther = () => {
+    toggleOther(facultyOther, facultySelect.value === campusData.other, !optional);
+    toggleOther(programOther, programSelect.value === campusData.other, !optional);
+  };
   const resetPrograms = () => {
     const faculty = campusData.faculties.find((item) => item.name === facultySelect.value);
     if (!faculty && facultySelect.value !== campusData.other) {
-      fillSelect(programSelect, "Pilih fakultas terlebih dahulu", []);
+      fillSelect(programSelect, "Pilih fakultas/direktorat terlebih dahulu", []);
       programSelect.disabled = true;
+      syncOther();
       return;
     }
     fillSelect(programSelect, optional ? "Pilih program studi (jika diketahui)" : "Pilih program studi", [...(faculty ? faculty.programs : []), campusData.other]);
     programSelect.disabled = false;
+    syncOther();
   };
   facultySelect.addEventListener("change", resetPrograms);
+  programSelect.addEventListener("change", syncOther);
   form.addEventListener("reset", () => setTimeout(resetPrograms));
   resetPrograms();
 });
