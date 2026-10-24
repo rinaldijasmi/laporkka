@@ -718,11 +718,11 @@ async function openReport(id) {
     addDetailField(grid, "NIM/NIP/ID pelapor", report.reporter_nim);
     addDetailField(grid, "Email pelapor", report.reporter_email);
     addDetailField(grid, "Telepon pelapor", report.reporter_phone);
-    addDetailField(grid, "Program studi pelapor", report.reporter_study_program);
+    addDetailField(grid, "Program Studi/Unit pelapor", report.reporter_study_program);
     addDetailField(grid, "Fakultas/Direktorat pelapor", report.reporter_faculty);
     addDetailField(grid, "Nama terlapor", report.reported_name);
     addDetailField(grid, "NIM/NIP/ID terlapor", report.reported_nim);
-    addDetailField(grid, "Program studi terlapor", report.reported_study_program);
+    addDetailField(grid, "Program Studi/Unit terlapor", report.reported_study_program);
     addDetailField(grid, "Fakultas/Direktorat terlapor", report.reported_faculty);
     addDetailField(grid, "Kategori", report.category);
     addDetailField(grid, "Tanggal kejadian", formatDate(report.incident_date));

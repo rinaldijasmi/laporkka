@@ -197,13 +197,13 @@ function invalidAcademicUnit(faculty: string, program: string, who: string) {
   const known = CAMPUS_DATA.faculties.find((item) => item.name === faculty);
   if (!known && faculty !== OTHER_OPTION) return `Fakultas ${who} tidak valid. Pilih dari daftar.`;
   if (program && program !== OTHER_OPTION && !(known?.programs as readonly string[] | undefined)?.includes(program)) {
-    return `Program studi ${who} tidak sesuai dengan fakultasnya.`;
+    return `Program Studi/Unit ${who} tidak sesuai dengan fakultasnya.`;
   }
   return null;
 }
 
 function otherDetailError(body: Record<string, string>, prefix: string, who: string) {
-  for (const [field, label] of [["Faculty", "Fakultas/Direktorat"], ["StudyProgram", "Program studi"]]) {
+  for (const [field, label] of [["Faculty", "Fakultas/Direktorat"], ["StudyProgram", "Program Studi/Unit"]]) {
     if (body[`${prefix}${field}`]?.trim() !== OTHER_OPTION) continue;
     const detail = (body[`${prefix}${field}Other`] || "").trim();
     if (!detail) return `${label} ${who} wajib diisi saat memilih Lainnya.`;
@@ -222,7 +222,7 @@ function validateReport(body: Record<string, string>) {
     ["reporterName", "Nama pelapor"],
     ["reporterNim", "NIM/NIP/Nomor Identitas pelapor"],
     ["reporterEmail", "Email pelapor"],
-    ["reporterStudyProgram", "Program studi pelapor"],
+    ["reporterStudyProgram", "Program Studi/Unit pelapor"],
     ["reporterFaculty", "Fakultas/Direktorat pelapor"],
     ["reportedName", "Nama terlapor"],
     ["reportedNim", "NIM/NIP/Nomor Identitas terlapor"],

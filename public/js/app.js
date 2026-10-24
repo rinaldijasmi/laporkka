@@ -246,7 +246,7 @@ form.querySelectorAll("[data-faculty-select]").forEach((facultySelect) => {
   const optional = facultySelect.hasAttribute("data-optional");
   fillSelect(facultySelect, optional ? "Pilih fakultas/direktorat (jika diketahui)" : "Pilih fakultas/direktorat", [...campusData.faculties.map((faculty) => faculty.name), campusData.other]);
   const facultyOther = createOtherInput(facultySelect, `${facultySelect.name}Other`, "Sebutkan fakultas/direktorat");
-  const programOther = createOtherInput(programSelect, `${programSelect.name}Other`, "Sebutkan program studi");
+  const programOther = createOtherInput(programSelect, `${programSelect.name}Other`, "Sebutkan program studi/unit");
   const syncOther = () => {
     toggleOther(facultyOther, facultySelect.value === campusData.other, !optional);
     toggleOther(programOther, programSelect.value === campusData.other, !optional);
@@ -259,7 +259,7 @@ form.querySelectorAll("[data-faculty-select]").forEach((facultySelect) => {
       syncOther();
       return;
     }
-    fillSelect(programSelect, optional ? "Pilih program studi (jika diketahui)" : "Pilih program studi", [...(faculty ? faculty.programs : []), campusData.other]);
+    fillSelect(programSelect, optional ? "Pilih program studi/unit (jika diketahui)" : "Pilih program studi/unit", [...(faculty ? faculty.programs : []), campusData.other]);
     programSelect.disabled = false;
     syncOther();
   };
